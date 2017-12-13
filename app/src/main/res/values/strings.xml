@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Fridge</string>
+    <string name="title_activity_view_product">Products View</string>
+    <string name="title_activity_product_view">Product View</string>
+    <string name="title_activity_create_product">Create Product</string>
+    <string name="title_activity_log_in">Login</string>
+    <string name="log_in_text">Log In</string>
+    <string name="add_product_text">Add Product</string>
+    <string name="create_user_text">Create Account</string>
+    <string name="prefrences_token">Tokens</string>
+    <string name="refresh_token">refresh_token</string>
+    <string name="refresh_token_expiration_date">refresh_token_expiration_date</string>
+    <string name="token">token</string>
+    <string name="token_expiration_date">token_expiration_date</string>
+    <string name="user_action">UserAction</string>
+    <string name="product">product</string>
+    <string name="product_name">name</string>
+    <string name="product_store_name">store_name</string>
+    <string name="product_price">price</string>
+    <string name="product_amount">amount</string>
+    <string name="bad_refresh_token">Bad refresh token</string>
+    <string name="bad_access_token">Bad access token</string>
+    <string name="bad_login_or_password">Bad login or password</string>
+    <string name="product_status">product status</string>
+    <string name="product_id">product id</string>
+    <string name="position">position</string>
+    <string name="should_reload">should reload</string>
+</resources>
