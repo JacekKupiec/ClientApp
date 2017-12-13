@@ -122,7 +122,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
     @Override
     protected void onPostExecute(List<ListViewItem> result) {
-        if (result != null) {
+        if (result == null) {
             Toast.makeText(activity, "Synchronizacja nie powiodła się, spróbuj jeszcze raz", Toast.LENGTH_SHORT).show();
             Log.d("Synchronization FAILED", "Nie udało się poprawnie wykonać synchronizacji");
         } else {

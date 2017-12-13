@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import com.kupiec.jacek.fridge.net.*;
+import com.kupiec.jacek.fridge.tasks.ReloadTask;
 import com.kupiec.jacek.fridge.tasks.SyncTask;
 
 import android.widget.AdapterView;
@@ -104,7 +105,7 @@ public class ProductsViewActivity extends AppCompatActivity {
                     boolean should_reload = data.getBooleanExtra(r.getString(R.string.should_reload), false);
 
                     if (should_reload)
-                        launch_sync_task();//reload_list_view(sp, data, r);
+                        launch_reload_task();//reload_list_view(sp, data, r);
                     else
                         this.adapter.add((ListViewItem) data.getSerializableExtra(r.getString(R.string.product)));
                 }
@@ -112,7 +113,7 @@ public class ProductsViewActivity extends AppCompatActivity {
                 break;
             case LOG_IN_ACTIVITY:
                 if (resultCode == Activity.RESULT_OK)
-                    launch_sync_task();//reload_list_view(sp, data, r);
+                    launch_reload_task();//reload_list_view(sp, data, r);
 
                 break;
             case SHOW_PRODUCT_ACTIVITY:
@@ -127,7 +128,7 @@ public class ProductsViewActivity extends AppCompatActivity {
                     boolean should_reload = data.getBooleanExtra(r.getString(R.string.should_reload), false);
 
                     if (should_reload)
-                        launch_sync_task();//reload_list_view(sp, data, r);
+                        launch_reload_task();//reload_list_view(sp, data, r);
                     else if (product_state == PRODUCT_REMOVED) {
                         this.adapter.remove(item);
                     } else if (product_state == PRODUCT_MODIFIED) {
@@ -167,7 +168,7 @@ public class ProductsViewActivity extends AppCompatActivity {
         };
     }
 
-    private void reload_list_view(SharedPreferences sp, Intent data, Resources r) {
+    /*private void reload_list_view(SharedPreferences sp, Intent data, Resources r) {
         List<ListViewItem> list;
         RequestResult result;
         String refresh_token = sp.getString(r.getString(R.string.refresh_token), "");
@@ -186,7 +187,7 @@ public class ProductsViewActivity extends AppCompatActivity {
         }
 
         setAdapter(list);
-    }
+    }*/
 
     private void launch_sync_task() {
         Resources r = getResources();
@@ -199,6 +200,27 @@ public class ProductsViewActivity extends AppCompatActivity {
                 RequestResult result = client.refresh(ref_token);
                 JSONObject jo = result.getResponseBodyJSONObject();
                 SyncTask task = new SyncTask(this, ref_token, jo.getString(r.getString(R.string.token)));
+
+                task.execute();
+            } catch (JSONException ex) {
+                Log.e("JSONException", "Nie udało się sprarsować odpowiedzi z serwera :(");
+            }
+        }
+        else
+            Toast.makeText(this, "Zaloguj się lub utwórz konto", Toast.LENGTH_SHORT).show();
+    }
+
+    private void launch_reload_task() {
+        Resources r = getResources();
+        SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
+        String ref_token = sp.getString(r.getString(R.string.refresh_token), "");
+        Date ref_token_exp_date = Utilities.convert_to_date(sp.getString(r.getString(R.string.refresh_token_expiration_date), null));
+
+        if (Utilities.is_ref_token_valid(ref_token_exp_date)) {
+            try {
+                RequestResult result = client.refresh(ref_token);
+                JSONObject jo = result.getResponseBodyJSONObject();
+                ReloadTask task = new ReloadTask(this, ref_token, jo.getString(r.getString(R.string.token)));
 
                 task.execute();
             } catch (JSONException ex) {
