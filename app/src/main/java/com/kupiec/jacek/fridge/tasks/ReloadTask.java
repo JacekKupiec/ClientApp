@@ -16,6 +16,7 @@ import com.kupiec.jacek.fridge.net.RestClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,12 +37,14 @@ public class ReloadTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
     @Override
     protected List<ListViewItem> doInBackground(Void... args) {
-        ProductDAO dao = new ProductDAO(this.activity);
+        ProductDAO dao = new ProductDAO(this.activity.getApplicationContext());
         RestClient client = new RestClient();
         String ref_tok = this.refresh_token, tok = this.access_token;
         List<ListViewItem> list = new LinkedList<>();
 
-        dao.truncateProductsTable(); //Usuwam wszystkie elementy
+        //Reload oznacza ,że użytkownik się przelogował,
+        // trzeba usunąć ślady poprzedniego
+        dao.truncateProductsTable();
 
         try {
             RequestResult result = client.get_products(ref_tok, tok);
@@ -63,8 +66,11 @@ public class ReloadTask extends AsyncTask<Void, Void, List<ListViewItem>> {
         } catch (InvalidRefreshTokenException ex) {
             Log.e("InvalidRefTokenExc", "Nie udało się wysłąć ");
             return null;
+        } catch (IOException ex) {
+            Log.d("IOException", "Brak połączenia z Internetem");
+            return null; //Nie ma połączenia z internetem
         } catch (JSONException ex) {
-            Log.e("JOSNException", "Nie udalo się przetworzyć odpowiedzi z serwera");
+            Log.e("JSONException", "Nie udalo się przetworzyć odpowiedzi z serwera");
             return null;
         }
 

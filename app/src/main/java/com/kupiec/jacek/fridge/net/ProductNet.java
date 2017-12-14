@@ -19,7 +19,7 @@ public class ProductNet {
         this.amount = amount;
     }
 
-    public ListViewItem toListViewItem(int id) {
+    public ListViewItem toListViewItem(long id) {
         return new ListViewItem(id,
                 this.name,
                 this.store_name,

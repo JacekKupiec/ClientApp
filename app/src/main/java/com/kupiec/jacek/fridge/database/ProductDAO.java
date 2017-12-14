@@ -16,13 +16,14 @@ import java.util.List;
  */
 
 public class ProductDAO {
-    private DBManager db_mng;
+    private static DBManager db_mng = null;
     private String table_name = "products";
     private String[] columns = { "id", "name", "store_name", "price", "total_amount",
             "subtotal_amoount", "remote_id", "new", "removed", "updated" };
 
     public ProductDAO(Context ctx) {
-        this.db_mng = new DBManager(ctx);
+        if (db_mng == null)
+            db_mng = new DBManager(ctx);
     }
 
     public List<ProductDBEntitiy> getAllNewProducts() {
@@ -81,16 +82,32 @@ public class ProductDAO {
         removeProduct(product.getId());
     }
 
-    public void addProduct(ProductDBEntitiy product) {
+    public long addProduct(ProductDBEntitiy product) {
         ContentValues values = product.getContentValues();
         SQLiteDatabase db = db_mng.getWritableDatabase();
 
-        db.insert(table_name, null, values);
+        long id = db.insert(table_name, null, values);
 
         db.close();
+
+        return id;
     }
 
     public void updateProduct(ProductDBEntitiy product) {
+        update_element_by_id(product);
+    }
+
+    public void setAsRemoved(long id) {
+        ProductDBEntitiy product = get_element_by_id(id);
+
+        product.setRemoved(1);
+        update_element_by_id(product);
+    }
+
+    public void setAsUpdated(long id) {
+        ProductDBEntitiy product = get_element_by_id(id);
+
+        product.setUpdated(1);
         update_element_by_id(product);
     }
 
@@ -108,14 +125,14 @@ public class ProductDAO {
         update_element_by_id(product);
     }
 
-    public void changeSubtotalBy(int id, int delta) {
+    public void changeSubtotalBy(long id, int delta) {
         ProductDBEntitiy product = get_element_by_id(id);
 
         product.setSubtotal(product.getSubtotal() + delta);
         update_element_by_id(product);
     }
 
-    public void changeTotalAmountBy(int id, int delta) {
+    public void changeTotalAmountBy(long id, int delta) {
         ProductDBEntitiy product = get_element_by_id(id);
 
         product.setTotal(product.getTotal() + delta);
@@ -133,7 +150,7 @@ public class ProductDAO {
         return list;
     }
 
-    private ProductDBEntitiy get_element_by_id(int id) {
+    private ProductDBEntitiy get_element_by_id(long id) {
         SQLiteDatabase db = db_mng.getReadableDatabase();
         String selection = "id = ?";
         String[] selectionArgs = { String.valueOf(id) };

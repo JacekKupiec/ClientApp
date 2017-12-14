@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+
+import com.kupiec.jacek.fridge.database.ProductDAO;
+import com.kupiec.jacek.fridge.database.ProductDBEntitiy;
 import com.kupiec.jacek.fridge.net.*;
 import com.kupiec.jacek.fridge.tasks.ReloadTask;
 import com.kupiec.jacek.fridge.tasks.SyncTask;
@@ -21,6 +23,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -37,12 +40,12 @@ public class ProductsViewActivity extends AppCompatActivity {
     private String token = null;
     private ArrayAdapter<ListViewItem> adapter = null;
     private RestClient client = new RestClient();
+    private ProductDAO dao = new ProductDAO(getApplicationContext());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_products_view);
-        Resources r = getResources();
 
         ListView listView = findViewById(R.id.listView);
         listView.setOnItemClickListener(get_list_view_listener());
@@ -79,10 +82,6 @@ public class ProductsViewActivity extends AppCompatActivity {
         this.token = token;
     }
 
-    public String getToken() {
-        return this.token;
-    }
-
     public synchronized void setAdapter(List<ListViewItem> list) {
         ListView listView = findViewById(R.id.listView);
 
@@ -105,7 +104,7 @@ public class ProductsViewActivity extends AppCompatActivity {
                     boolean should_reload = data.getBooleanExtra(r.getString(R.string.should_reload), false);
 
                     if (should_reload)
-                        launch_reload_task();//reload_list_view(sp, data, r);
+                        launch_reload_task();
                     else
                         this.adapter.add((ListViewItem) data.getSerializableExtra(r.getString(R.string.product)));
                 }
@@ -132,18 +131,9 @@ public class ProductsViewActivity extends AppCompatActivity {
                     else if (product_state == PRODUCT_REMOVED) {
                         this.adapter.remove(item);
                     } else if (product_state == PRODUCT_MODIFIED) {
-                        RequestResult result;
-                        String refresh_token = sp.getString(r.getString(R.string.refresh_token), "");
+                        ProductDBEntitiy product = this.dao.getProduct(item);
 
-                        try {
-                            result = this.client.get_product(refresh_token, this.token, item.getId());
-                            item.setAmount(result.getResponseBodyJSONObject().getInt(r.getString(R.string.product_amount)));
-                        } catch (InvalidRefreshTokenException exp) {
-                            Log.e("InvalidRefreshTokenExc", "Nie dalo się pobrać produktu z serwera");
-                            Toast.makeText(this, "Zaloguj sie ponownie aby doświeżyc listę", Toast.LENGTH_SHORT).show();
-                        } catch (JSONException ex) {
-                            Log.e("JSONException", "Nie udało się przetworzyć odpowiedzi z serwera");
-                        }
+                        item.setAmount(product.getTotal());
                     }
                 }
 
@@ -168,27 +158,6 @@ public class ProductsViewActivity extends AppCompatActivity {
         };
     }
 
-    /*private void reload_list_view(SharedPreferences sp, Intent data, Resources r) {
-        List<ListViewItem> list;
-        RequestResult result;
-        String refresh_token = sp.getString(r.getString(R.string.refresh_token), "");
-
-        this.token = data.getStringExtra(r.getString(R.string.token));
-
-        try {
-            result = this.client.get_products(refresh_token, this.token);
-            list = Utilities.convert_json_to_list(result.getResponseBodyJSONObject());
-        } catch (JSONException ex) {
-            Log.e("JSONException", "Nie udało się przetworzyć odpowiedzi z serwera");
-            return;
-        } catch (InvalidRefreshTokenException ex) {
-            Log.e("InvalidRefreshTokenExc","Nie ważny refresh_token po zalogowaniu, coś tu jest nie tak");
-            return;
-        }
-
-        setAdapter(list);
-    }*/
-
     private void launch_sync_task() {
         Resources r = getResources();
         SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
@@ -204,6 +173,11 @@ public class ProductsViewActivity extends AppCompatActivity {
                 task.execute();
             } catch (JSONException ex) {
                 Log.e("JSONException", "Nie udało się sprarsować odpowiedzi z serwera :(");
+            } catch (IOException ex) {
+                Log.d("IOException", "Brak połączenia z Internetem");
+                Toast.makeText(this,
+                    "Brak połączenia z Internetem",
+                    Toast.LENGTH_SHORT).show();
             }
         }
         else
@@ -225,6 +199,9 @@ public class ProductsViewActivity extends AppCompatActivity {
                 task.execute();
             } catch (JSONException ex) {
                 Log.e("JSONException", "Nie udało się sprarsować odpowiedzi z serwera :(");
+            } catch (IOException ex) {
+                Log.d("IOException", "Brak połączenia z Internetem");
+                Toast.makeText(this, "Brak połączenia z internetem", Toast.LENGTH_SHORT).show();
             }
         }
         else

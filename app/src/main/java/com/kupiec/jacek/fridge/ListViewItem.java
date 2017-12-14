@@ -7,7 +7,7 @@ import java.io.Serializable;
  */
 
 public class ListViewItem implements Serializable {
-    private int id;
+    private long id;
     private int amount;
     private String name;
     private String store_name;
@@ -18,7 +18,7 @@ public class ListViewItem implements Serializable {
     private int updated;
     private int remote_id;
 
-    public ListViewItem(int id, String name, String store_name, double price, int amount) {
+    public ListViewItem(long id, String name, String store_name, double price, int amount) {
         this.id = id;
         this.name = name;
         this.store_name = store_name;
@@ -31,11 +31,11 @@ public class ListViewItem implements Serializable {
         return this.name;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

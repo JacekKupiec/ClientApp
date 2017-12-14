@@ -11,6 +11,8 @@ import android.content.Intent;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.kupiec.jacek.fridge.database.ProductDAO;
+import com.kupiec.jacek.fridge.database.ProductDBEntitiy;
 import com.kupiec.jacek.fridge.net.InvalidRefreshTokenException;
 import com.kupiec.jacek.fridge.net.ProductNet;
 import com.kupiec.jacek.fridge.net.RequestResult;
@@ -18,12 +20,14 @@ import com.kupiec.jacek.fridge.net.RestClient;
 
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 
 public class CreateProductActivity extends AppCompatActivity {
     private RestClient client = new RestClient();
     private Intent result_intent = new Intent();
     private String access_token;
+    private ProductDAO dao = new ProductDAO(this.getApplicationContext());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,10 +72,17 @@ public class CreateProductActivity extends AppCompatActivity {
             }
 
             if (result.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                int id = result.getResponseBodyJSONObject().getInt("id");
+                int remote_id = result.getResponseBodyJSONObject().getInt("id");
 
-                this.result_intent.putExtra(r.getString(R.string.product), product.toListViewItem(id));
+                long db_id = dao.addProduct(new ProductDBEntitiy(product.getName(),
+                        product.getStoreName(),
+                        product.getPrice(),
+                        product.getAmount(),
+                        0, 0, 0, 0,
+                        remote_id));
+                this.result_intent.putExtra(r.getString(R.string.product), product.toListViewItem(db_id));
                 setResult(Activity.RESULT_OK, this.result_intent);
+
                 finish();
             } else if (result.getResponseCode() == HttpURLConnection.HTTP_BAD_REQUEST){
                 Toast.makeText(this, "Nieprawidłowe dane dla utworzenia produktu", Toast.LENGTH_SHORT).show();
@@ -82,6 +93,18 @@ public class CreateProductActivity extends AppCompatActivity {
             Log.d("InvalidRefreshTokenExc", "Użytkownik musi się ponownie zalogować");
             Toast.makeText(this, "Zaloguj się", Toast.LENGTH_SHORT).show();
             startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
+        } catch (IOException ex) {
+            long db_id = dao.addProduct(new ProductDBEntitiy(product.getName(),
+                    product.getStoreName(),
+                    product.getPrice(),
+                    product.getAmount(),
+                    0, 1, 0, 0,
+                    -1));
+
+            this.result_intent.putExtra(r.getString(R.string.product), product.toListViewItem(db_id));
+            setResult(Activity.RESULT_OK, this.result_intent);
+
+            finish();
         } catch (JSONException ex) {
             Log.e("JSONException", "Nie udalo sie przetworzyc odpowiedzi od serwera");
         }

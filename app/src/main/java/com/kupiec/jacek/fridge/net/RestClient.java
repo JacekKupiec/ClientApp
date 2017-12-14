@@ -1,8 +1,6 @@
 package com.kupiec.jacek.fridge.net;
 
-import android.net.Network;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.ActivityChooserView;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -16,13 +14,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
 public class RestClient {
     private final String SERVER_IP = "http://10.0.2.2:3000";
     private final String BAD_ACCESS_TOKEN = "Bad access token";
 
-    public RequestResult add_product(String refresh_token, String token, ProductNet product) throws InvalidRefreshTokenException {
+    public RequestResult add_product(String refresh_token, String token, ProductNet product)
+            throws InvalidRefreshTokenException, IOException {
         JSONObject jo = new JSONObject();
         JSONObject p = new JSONObject();
         RequestResult result;
@@ -45,127 +43,99 @@ public class RestClient {
 
                 return result;
             }
-        } catch (IOException ex) {
-            Log.e("IOException", "Nie udalo sie zamknac strumieni");
-            return null;
         } catch (JSONException ex) {
             Log.e("JSONException", "Nie udalo sie utworzyc pliku JSON");
             return null;
         }
     }
 
-    public RequestResult delete_product(String refresh_token, String token, int id) throws InvalidRefreshTokenException {
-        try {
-            String url = String.format("%s/products/%d", SERVER_IP, id);
-            RequestResult result = doDELETE(url, token);
-            String new_token = refresh_access_token_if_necessary(result, refresh_token);
+    public RequestResult delete_product(String refresh_token, String token, long id)
+            throws InvalidRefreshTokenException, IOException {
+        String url = String.format("%s/products/%d", SERVER_IP, id);
+        RequestResult result = doDELETE(url, token);
+        String new_token = refresh_access_token_if_necessary(result, refresh_token);
 
-            if (new_token.isEmpty())
-                return result;
-            else {
-                result =  doDELETE(url, new_token);
-                result.setRefreshedAccessToken(new_token);
+        if (new_token.isEmpty())
+            return result;
+        else {
+            result =  doDELETE(url, new_token);
+            result.setRefreshedAccessToken(new_token);
 
-                return result;
-            }
-        } catch (IOException ex) {
-            Log.e("IOException", "Nie udalo sie Zamknac strumieni");
+            return result;
         }
-
-        return null;
     }
 
-    public RequestResult increase_amount(String refresh_token, String token, int id, int delta) throws InvalidRefreshTokenException {
+    public RequestResult increase_amount(String refresh_token, String token, long id, int delta)
+            throws InvalidRefreshTokenException, IOException {
         String url = String.format("%s/products/increase_amount/%d/%d", SERVER_IP, id, delta);
 
-        try {
-            RequestResult result = doPUT(url, token);
-            String new_token = refresh_access_token_if_necessary(result, refresh_token);
+        RequestResult result = doPUT(url, token);
+        String new_token = refresh_access_token_if_necessary(result, refresh_token);
 
-            if (new_token.isEmpty())
-                return result;
-            else {
-                result =  doPUT(url, new_token);
-                result.setRefreshedAccessToken(new_token);
+        if (new_token.isEmpty())
+            return result;
+        else {
+            result =  doPUT(url, new_token);
+            result.setRefreshedAccessToken(new_token);
 
-                return result;
-            }
-        } catch (IOException ex) {
-            Log.e("IOException", "Nie udalo sie Zamknac strumieni");
+            return result;
         }
-
-        return null;
     }
 
-    public RequestResult decrease_amount(String refresh_token, String token, int id, int delta) throws InvalidRefreshTokenException {
+    public RequestResult decrease_amount(String refresh_token, String token, long id, int delta)
+            throws InvalidRefreshTokenException, IOException {
         String url = String.format("%s/products/decrease_amount/%d/%d", SERVER_IP, id, delta);
 
-        try {
-            RequestResult result = doPUT(url, token);
-            String new_token = refresh_access_token_if_necessary(result, refresh_token);
+        RequestResult result = doPUT(url, token);
+        String new_token = refresh_access_token_if_necessary(result, refresh_token);
 
-            if (new_token.isEmpty())
-                return result;
-            else {
-                result =  doPUT(url, new_token);
-                result.setRefreshedAccessToken(new_token);
+        if (new_token.isEmpty())
+            return result;
+        else {
+            result =  doPUT(url, new_token);
+            result.setRefreshedAccessToken(new_token);
 
-                return result;
-            }
-
-        } catch (IOException ex) {
-            Log.e("IOException", "Nie udalo sie Zamknac strumieni");
+            return result;
         }
-
-        return null;
     }
 
-    public RequestResult sync_subsum(String refresh_token, String token, int id, int subtotal) throws InvalidRefreshTokenException {
+    public RequestResult sync_subsum(String refresh_token, String token, long id, int subtotal)
+            throws InvalidRefreshTokenException, IOException {
         String url = String.format("%s/products/sync_subsum/%d/%d", SERVER_IP, id, subtotal);
 
-        try {
-            RequestResult result = doPUT(url, token);
-            String new_token = refresh_access_token_if_necessary(result, refresh_token);
+        RequestResult result = doPUT(url, token);
+        String new_token = refresh_access_token_if_necessary(result, refresh_token);
 
-            if (new_token.isEmpty())
-                return result;
-            else {
-                result =  doPUT(url, new_token);
-                result.setRefreshedAccessToken(new_token);
+        if (new_token.isEmpty())
+            return result;
+        else {
+            result =  doPUT(url, new_token);
+            result.setRefreshedAccessToken(new_token);
 
-                return result;
-            }
-        } catch (IOException ex) {
-            Log.e("IOException", "Nie udalo sie Zamknac strumieni");
+            return result;
         }
-
-        return null;
     }
 
-    public RequestResult get_product(String refresh_token, String token, int id) throws InvalidRefreshTokenException {
+    public RequestResult get_product(String refresh_token, String token, long id)
+            throws InvalidRefreshTokenException, IOException {
         String url = String.format("%s/products/%d", SERVER_IP, id);
 
-        try {
-            RequestResult result = doGET(url, token);
-            String new_token = refresh_access_token_if_necessary(result, refresh_token);
+        RequestResult result = doGET(url, token);
+        String new_token = refresh_access_token_if_necessary(result, refresh_token);
 
-            if (new_token.isEmpty())
-                return result;
-            else {
-                result =  doGET(url, new_token);
-                result.setRefreshedAccessToken(new_token);
+        if (new_token.isEmpty())
+            return result;
+        else {
+            result =  doGET(url, new_token);
+            result.setRefreshedAccessToken(new_token);
 
-                return result;
-            }
-        } catch (IOException ex) {
-            Log.e("IOException", "Nie udalo sie Zamknac strumieni");
+            return result;
         }
-
-        return null;
     }
 
     //To można wykorzystać jednocześnie do tworzenia urzytkownika i do logowania się
-    public RequestResult send_user_data(String username, String password, String op) {
+    public RequestResult send_user_data(String username, String password, String op)
+            throws IOException {
         JSONObject jo = new JSONObject();
         String url = String.format("%s/users/%s", SERVER_IP, op);
 
@@ -174,8 +144,6 @@ public class RestClient {
             jo.getJSONObject("user").put("name", username).put("password", password);
 
             return doPOST(url, "", jo.toString());
-        } catch (IOException ex) {
-            Log.e("IOException", "Nie udalo sie Zamknac strumieni");
         } catch (JSONException ex) {
             Log.e("JSONException", "Nie udalo sie utworzyc pliku JSON");
         }
@@ -183,31 +151,22 @@ public class RestClient {
         return null;
     }
 
-    public RequestResult refresh(String refresh_token) {
-        try {
-            return doGET(SERVER_IP + "/users/refresh", refresh_token);
-        } catch (IOException ex) {
-            Log.e("IOException", "Błąd przy zamykaniu BufferedReader");
-            return null;
-        }
+    public RequestResult refresh(String refresh_token) throws IOException {
+        return doGET(SERVER_IP + "/users/refresh", refresh_token);
     }
 
-    public RequestResult get_products(String refresh_token, String token) throws InvalidRefreshTokenException {
-        try {
-            RequestResult result = doGET(SERVER_IP + "/users/get_products", token);
-            String new_token = refresh_access_token_if_necessary(result, refresh_token);
+    public RequestResult get_products(String refresh_token, String token)
+            throws InvalidRefreshTokenException, IOException {
+        RequestResult result = doGET(SERVER_IP + "/users/get_products", token);
+        String new_token = refresh_access_token_if_necessary(result, refresh_token);
 
-            if (new_token.isEmpty())
-                return result;
-            else {
-                result =  doGET(SERVER_IP + "/users/get_products", new_token);
-                result.setRefreshedAccessToken(new_token);
+        if (new_token.isEmpty())
+            return result;
+        else {
+            result =  doGET(SERVER_IP + "/users/get_products", new_token);
+            result.setRefreshedAccessToken(new_token);
 
-                return result;
-            }
-        } catch (IOException ex) {
-            Log.e("IOException", "Błąd przy zamykaniu BufferedReader");
-            return null;
+            return result;
         }
     }
 
@@ -215,15 +174,7 @@ public class RestClient {
     private RequestResult doGET(String url, String token) throws IOException {
         NetworkTask task = new NetworkTask("GET", url, token, null);
 
-        task.start();
-        try {
-            task.join();
-
-            return task.getRequestResult();
-        } catch (InterruptedException ex) {
-            Log.e("InterruptedExc", "Wątek komunikacji z siecią został przerwany");
-            return null;
-        }
+        return perform_task(task);
 
     }
 
@@ -231,41 +182,31 @@ public class RestClient {
     private RequestResult doPOST(String url, String token, String content) throws IOException {
         NetworkTask task = new NetworkTask("POST", url, token, content);
 
-        task.start();
-
-        try {
-            task.join();
-
-            return task.getRequestResult();
-        } catch (InterruptedException ex) {
-            Log.e("InterruptedExc", "Wątek komunikacji z siecią został przerwany");
-            return null;
-        }
+        return perform_task(task);
     }
 
     @Nullable
     private RequestResult doPUT(String url, String token) throws IOException {
         NetworkTask task = new NetworkTask("PUT", url, token, null);
 
-        task.start();
-
-        try {
-            task.join();
-
-            return task.getRequestResult();
-        } catch (InterruptedException ex) {
-            Log.e("InterruptedExc", "Wątek komunikacji z siecią został przerwany");
-            return null;
-        }
+        return  perform_task(task);
     }
 
     @Nullable
     private RequestResult doDELETE(String url, String token) throws IOException {
         NetworkTask task = new NetworkTask("DELETE", url, token, null);
 
+        return perform_task(task);
+    }
+
+    @Nullable
+    private RequestResult perform_task(NetworkTask task) throws IOException {
         task.start();
+
         try {
             task.join();
+
+            if (task.exceptionWasThrown()) throw task.getException();
 
             return task.getRequestResult();
         } catch (InterruptedException ex) {
@@ -295,7 +236,8 @@ public class RestClient {
         return "";
     }
 
-    private String refresh_access_token_if_necessary(RequestResult result, String refresh_token) throws InvalidRefreshTokenException {
+    private String refresh_access_token_if_necessary(RequestResult result, String refresh_token)
+            throws InvalidRefreshTokenException, IOException {
         if (is_access_token_invalid(result)) {
             RequestResult res = this.refresh(refresh_token);
 
@@ -311,8 +253,9 @@ public class RestClient {
     private class NetworkTask extends Thread {
         private String method, url, token, content;
         private RequestResult result;
+        private IOException e = null;
 
-        public NetworkTask(String method, String url, String token, @Nullable String content) {
+        public  NetworkTask(String method, String url, String token, @Nullable String content) {
             this.method = method;
             this.url = url;
             this.token = token;
@@ -362,7 +305,8 @@ public class RestClient {
             } catch (ProtocolException ex) {
                 Log.e("ProtocolException", "Źle ustawiona metoda HTTP");
             } catch (IOException ex) {
-                Log.e("IOException", "Nie ma połączenia z serwisem, nie udało się pobrać danych");
+                Log.d("IOException", "Błąd podczas komunikacji z siecią");
+                this.e = ex;
             } finally {
                 try {
                     if (br != null) br.close();
@@ -373,8 +317,16 @@ public class RestClient {
             }
         }
 
-        RequestResult getRequestResult() {
+        public RequestResult getRequestResult() {
             return result;
+        }
+
+        public boolean exceptionWasThrown() {
+            return e != null;
+        }
+
+        public IOException getException() {
+            return e;
         }
     }
 }

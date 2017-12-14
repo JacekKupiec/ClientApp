@@ -16,6 +16,7 @@ import com.kupiec.jacek.fridge.net.RestClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
     @Override
     protected List<ListViewItem> doInBackground(Void... args) {
-        ProductDAO dao = new ProductDAO(this.activity);
+        ProductDAO dao = new ProductDAO(this.activity.getApplicationContext());
         RestClient client = new RestClient();
         String ref_tok = this.refresh_token, tok = this.access_token;
 
@@ -54,8 +55,11 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                 dao.updateProduct(product);
             } catch (InvalidRefreshTokenException ex) {
                 Log.e("InvalidRefershToken",
-                "Nie można wykonać operacji ponieważ refresh token, który został podany nie działa");
+                   "Nie można wykonać operacji ponieważ refresh token, który został podany nie działa");
                 return null;
+            } catch (IOException ex) {
+                Log.d("IOException", "Brak połączenia z Internetem");
+                return null; //Nie ma połączenia z internetem
             } catch (JSONException ex) {
                 Log.e("JSONException", "Nieprawidłowy format odpowiedzi z serwera");
                 return null;
@@ -73,6 +77,9 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                 Log.e("InvalidRefershToken",
                         "Nie można wykonać operacji ponieważ refresh token, który został podany nie działa");
                 return null;
+            } catch (IOException ex) {
+                Log.d("IOException", "Brak połączenia z Internetem");
+                return null; //Nie ma połączenia z internetem
             }
         }
 
@@ -104,6 +111,9 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
             Log.e("InvalidRefershToken",
                     "Nie można wykonać operacji ponieważ refresh token, który został podany nie działa");
             return null;
+        } catch (IOException ex) {
+            Log.d("IOException", "Brak połączenia z Internetem");
+            return null; //Nie ma połączenia z internetem
         } catch (JSONException ex) {
             Log.e("JSONException", "Nieprawidłowy format odpowiedzi z serwera");
             return null;

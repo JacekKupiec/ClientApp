@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.kupiec.jacek.fridge.database.ProductDAO;
+import com.kupiec.jacek.fridge.database.ProductDBEntitiy;
 import com.kupiec.jacek.fridge.net.InvalidRefreshTokenException;
 import com.kupiec.jacek.fridge.net.RequestResult;
 import com.kupiec.jacek.fridge.net.RestClient;
@@ -20,6 +22,7 @@ import com.kupiec.jacek.fridge.net.RestClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 
 public class ProductViewActivity extends AppCompatActivity {
@@ -27,6 +30,7 @@ public class ProductViewActivity extends AppCompatActivity {
     private Intent result_intent = new Intent();
     private boolean edited = false;
     private RestClient client = new RestClient();
+    private ProductDAO dao = new ProductDAO(getApplicationContext());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +45,7 @@ public class ProductViewActivity extends AppCompatActivity {
         this.result_intent.putExtra(r.getString(R.string.should_reload), false);
 
         ListViewItem item = (ListViewItem)intent.getSerializableExtra(r.getString(R.string.product));
+
         TextView nameTextView = findViewById(R.id.nameTextView);
         TextView storeNameTextView = findViewById(R.id.storeNameTextView);
         TextView priceTextView = findViewById(R.id.priceTextView);
@@ -60,7 +65,10 @@ public class ProductViewActivity extends AppCompatActivity {
         ListViewItem item = (ListViewItem)in_intent.getSerializableExtra(r.getString(R.string.product));
 
         try {
-            RequestResult result = this.client.delete_product(refresh_token, this.access_token, item.getId());
+            ProductDBEntitiy product = this.dao.getProduct(item);
+            RequestResult result = this.client.delete_product(refresh_token,
+                    this.access_token,
+                    product.getRemoteId());
 
             update_access_token(result);
 
@@ -68,6 +76,8 @@ public class ProductViewActivity extends AppCompatActivity {
                 case HttpURLConnection.HTTP_OK:
                     this.edited = false;
                     this.result_intent.putExtra(r.getString(R.string.product_status), ProductsViewActivity.PRODUCT_REMOVED);
+
+                    this.dao.removeProdukt(product);
                     setResult(Activity.RESULT_OK, this.result_intent);
                     finish();
                     break;
@@ -81,6 +91,8 @@ public class ProductViewActivity extends AppCompatActivity {
         } catch (InvalidRefreshTokenException ex) {
             Intent intent = new Intent(this, LogInActivity.class);
             startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
+        } catch (IOException ex) {
+            this.dao.setAsRemoved(item.getId());
         }
     }
 
@@ -101,7 +113,11 @@ public class ProductViewActivity extends AppCompatActivity {
         int delta = Integer.parseInt(amountEditText.getText().toString());
 
         try {
-            RequestResult result = this.client.decrease_amount(refresh_token, this.access_token, item.getId(), delta);
+            ProductDBEntitiy product = this.dao.getProduct(item);
+            RequestResult result = this.client.decrease_amount(refresh_token,
+                    this.access_token,
+                    product.getRemoteId(),
+                    delta);
             JSONObject jo;
 
             update_access_token(result);
@@ -111,6 +127,8 @@ public class ProductViewActivity extends AppCompatActivity {
                     this.edited = true;
                     jo = result.getResponseBodyJSONObject();
                     amountTextView.setText(convert_amount(jo));
+                    this.dao.updateTotalAmount(product.getId(), jo.getInt(r.getString(R.string.product_amount)));
+                    this.dao.changeSubtotalBy(product.getId(), -delta);
                     break;
                 case HttpURLConnection.HTTP_BAD_REQUEST:
                     Log.e("BAD REQUEST", "Podano niewłaściwe parametry do usuniecia produktu");
@@ -125,6 +143,11 @@ public class ProductViewActivity extends AppCompatActivity {
             startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
         } catch (JSONException ex) {
             Log.e("JSONException", "Nie udało się przetworzyć odpowiedzi z serwera");
+        } catch (IOException ex) {
+            amountTextView.setText(String.valueOf(item.getAmount() - delta));
+            this.dao.changeSubtotalBy(item.getId(), -delta);
+            this.dao.changeTotalAmountBy(item.getId(), -delta);
+            this.dao.setAsUpdated(item.getId());
         }
     }
 
@@ -145,8 +168,13 @@ public class ProductViewActivity extends AppCompatActivity {
         int delta = Integer.parseInt(amountEditText.getText().toString());
 
         try {
-            RequestResult result = this.client.increase_amount(refresh_token, this.access_token, item.getId(), delta);
+            ProductDBEntitiy product = this.dao.getProduct(item);
+            RequestResult result = this.client.increase_amount(refresh_token,
+                    this.access_token,
+                    product.getRemoteId(),
+                    delta);
             JSONObject jo;
+
 
             update_access_token(result);
 
@@ -155,6 +183,8 @@ public class ProductViewActivity extends AppCompatActivity {
                     this.edited = true;
                     jo = result.getResponseBodyJSONObject();
                     amountTextView.setText(convert_amount(jo));
+                    this.dao.updateTotalAmount(product.getId(), jo.getInt(r.getString(R.string.product_amount)));
+                    this.dao.changeSubtotalBy(product.getId(), delta);
                     break;
                 case HttpURLConnection.HTTP_BAD_REQUEST:
                     Log.e("BAD REQUEST", "Podano niewłaściwe parametry do usuniecia produktu");
@@ -169,6 +199,11 @@ public class ProductViewActivity extends AppCompatActivity {
             startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
         } catch (JSONException ex) {
             Log.e("JSONException", "Nie udalo sie przetworzy codpowiedzi z serwera");
+        } catch (IOException ex) {
+            amountTextView.setText(String.valueOf(item.getAmount() + delta));
+            this.dao.changeSubtotalBy(item.getId(), delta);
+            this.dao.changeTotalAmountBy(item.getId(), delta);
+            this.dao.setAsUpdated(item.getId());
         }
     }
 

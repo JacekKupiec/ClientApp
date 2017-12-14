@@ -19,9 +19,9 @@ public class ProductDBEntitiy {
     private int _new;
     private int removed;
     private int updated;
-    private int remote_id;
+    private long remote_id;
 
-    public ProductDBEntitiy(int id, String name, String store_name, double price, int subtotal, int _new, int removed, int updated, int remote_id) {
+    public ProductDBEntitiy(int id, String name, String store_name, double price, int subtotal, int _new, int removed, int updated, long remote_id) {
         this.id = id;
         this.name = name;
         this.store_name = store_name;
@@ -33,7 +33,7 @@ public class ProductDBEntitiy {
         this.remote_id = remote_id;
     }
 
-    public ProductDBEntitiy(String name, String store_name, double price, int total, int subtotal, int _new, int removed, int updated, int remote_id) {
+    public ProductDBEntitiy(String name, String store_name, double price, int total, int subtotal, int _new, int removed, int updated, long remote_id) {
         this.name = name;
         this.store_name = store_name;
         this.price = price;
@@ -142,11 +142,11 @@ public class ProductDBEntitiy {
         this.updated = updated;
     }
 
-    public int getRemoteId() {
+    public long getRemoteId() {
         return remote_id;
     }
 
-    public void setRemoteId(int remote_id) {
+    public void setRemoteId(long remote_id) {
         this.remote_id = remote_id;
     }
 
