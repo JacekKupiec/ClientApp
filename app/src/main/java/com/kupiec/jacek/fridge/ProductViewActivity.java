@@ -213,10 +213,12 @@ public class ProductViewActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 Resources r = getResources();
                 String new_token = data.getStringExtra(r.getString(R.string.token));
+                Boolean should_reload = data.getBooleanExtra(r.getString(R.string.should_reload),
+                        false);
 
                 this.access_token = new_token;
                 this.result_intent.putExtra(r.getString(R.string.token), new_token);
-                this.result_intent.putExtra(r.getString(R.string.should_reload), true);
+                this.result_intent.putExtra(r.getString(R.string.should_reload), should_reload);
             }
         }
     }

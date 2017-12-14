@@ -111,8 +111,12 @@ public class ProductsViewActivity extends AppCompatActivity {
 
                 break;
             case LOG_IN_ACTIVITY:
-                if (resultCode == Activity.RESULT_OK)
-                    launch_reload_task();//reload_list_view(sp, data, r);
+                if (resultCode == Activity.RESULT_OK) {
+                    boolean should_reload = data.getBooleanExtra(r.getString(R.string.should_reload),
+                            false);
+
+                    if (should_reload) launch_reload_task();
+                }
 
                 break;
             case SHOW_PRODUCT_ACTIVITY:
@@ -120,17 +124,17 @@ public class ProductsViewActivity extends AppCompatActivity {
                 this.token = Utilities.update_access_token(this.token, new_token);
 
                 if (resultCode == Activity.RESULT_OK) {
-                    ListView lv = findViewById(R.id.listView);
                     int product_state = data.getIntExtra(r.getString(R.string.product_status), -1);
                     int position = data.getIntExtra(r.getString(R.string.position),-1);
-                    ListViewItem item = (ListViewItem)lv.getItemAtPosition(position);
                     boolean should_reload = data.getBooleanExtra(r.getString(R.string.should_reload), false);
+                    ListView lv = findViewById(R.id.listView);
+                    ListViewItem item = (ListViewItem)lv.getItemAtPosition(position);
 
                     if (should_reload)
-                        launch_reload_task();//reload_list_view(sp, data, r);
-                    else if (product_state == PRODUCT_REMOVED) {
+                        launch_reload_task();
+                    else if (product_state == PRODUCT_REMOVED)
                         this.adapter.remove(item);
-                    } else if (product_state == PRODUCT_MODIFIED) {
+                    else if (product_state == PRODUCT_MODIFIED) {
                         ProductDBEntitiy product = this.dao.getProduct(item);
 
                         item.setAmount(product.getTotal());
@@ -172,16 +176,20 @@ public class ProductsViewActivity extends AppCompatActivity {
 
                 task.execute();
             } catch (JSONException ex) {
-                Log.e("JSONException", "Nie udało się sprarsować odpowiedzi z serwera :(");
+                Log.e("JSONException",
+                        "Nie udało się sprarsować odpowiedzi z serwera :(");
             } catch (IOException ex) {
-                Log.d("IOException", "Brak połączenia z Internetem");
+                Log.d("IOException",
+                        "Brak połączenia z Internetem");
                 Toast.makeText(this,
                     "Brak połączenia z Internetem",
                     Toast.LENGTH_SHORT).show();
             }
         }
         else
-            Toast.makeText(this, "Zaloguj się lub utwórz konto", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Zaloguj się lub utwórz konto",
+                    Toast.LENGTH_SHORT).show();
     }
 
     private void launch_reload_task() {
@@ -198,13 +206,19 @@ public class ProductsViewActivity extends AppCompatActivity {
 
                 task.execute();
             } catch (JSONException ex) {
-                Log.e("JSONException", "Nie udało się sprarsować odpowiedzi z serwera :(");
+                Log.e("JSONException",
+                        "Nie udało się sprarsować odpowiedzi z serwera :(");
             } catch (IOException ex) {
-                Log.d("IOException", "Brak połączenia z Internetem");
-                Toast.makeText(this, "Brak połączenia z internetem", Toast.LENGTH_SHORT).show();
+                Log.d("IOException",
+                        "Brak połączenia z Internetem");
+                Toast.makeText(this,
+                        "Brak połączenia z internetem",
+                        Toast.LENGTH_SHORT).show();
             }
         }
         else
-            Toast.makeText(this, "Zaloguj się lub utwórz konto", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,
+                    "Zaloguj się lub utwórz konto",
+                    Toast.LENGTH_SHORT).show();
     }
 }

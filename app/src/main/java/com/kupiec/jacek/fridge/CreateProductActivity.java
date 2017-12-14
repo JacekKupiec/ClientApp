@@ -73,25 +73,29 @@ public class CreateProductActivity extends AppCompatActivity {
 
             if (result.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 int remote_id = result.getResponseBodyJSONObject().getInt("id");
-
                 long db_id = dao.addProduct(new ProductDBEntitiy(product.getName(),
                         product.getStoreName(),
                         product.getPrice(),
                         product.getAmount(),
                         0, 0, 0, 0,
                         remote_id));
+
                 this.result_intent.putExtra(r.getString(R.string.product), product.toListViewItem(db_id));
                 setResult(Activity.RESULT_OK, this.result_intent);
-
                 finish();
             } else if (result.getResponseCode() == HttpURLConnection.HTTP_BAD_REQUEST){
-                Toast.makeText(this, "Nieprawidłowe dane dla utworzenia produktu", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,
+                        "Nieprawidłowe dane dla utworzenia produktu",
+                        Toast.LENGTH_SHORT).show();
             }
         } catch (InvalidRefreshTokenException ex) {
             Intent intent = new Intent(this, LogInActivity.class);
 
-            Log.d("InvalidRefreshTokenExc", "Użytkownik musi się ponownie zalogować");
-            Toast.makeText(this, "Zaloguj się", Toast.LENGTH_SHORT).show();
+            Log.d("InvalidRefreshTokenExc",
+                    "Użytkownik musi się ponownie zalogować");
+            Toast.makeText(this,
+                    "Zaloguj się",
+                    Toast.LENGTH_SHORT).show();
             startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
         } catch (IOException ex) {
             long db_id = dao.addProduct(new ProductDBEntitiy(product.getName(),
@@ -103,10 +107,10 @@ public class CreateProductActivity extends AppCompatActivity {
 
             this.result_intent.putExtra(r.getString(R.string.product), product.toListViewItem(db_id));
             setResult(Activity.RESULT_OK, this.result_intent);
-
             finish();
         } catch (JSONException ex) {
-            Log.e("JSONException", "Nie udalo sie przetworzyc odpowiedzi od serwera");
+            Log.e("JSONException",
+                    "Nie udalo sie przetworzyc odpowiedzi od serwera");
         }
     }
 
@@ -122,10 +126,12 @@ public class CreateProductActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 Resources r = getResources();
                 String new_token = data.getStringExtra(r.getString(R.string.token));
+                Boolean should_reload = data.getBooleanExtra(r.getString(R.string.should_reload),
+                        false);
 
                 this.access_token = new_token;
                 this.result_intent.putExtra(r.getString(R.string.token), new_token);
-                this.result_intent.putExtra(r.getString(R.string.should_reload), true);
+                this.result_intent.putExtra(r.getString(R.string.should_reload), should_reload);
             }
         }
     }

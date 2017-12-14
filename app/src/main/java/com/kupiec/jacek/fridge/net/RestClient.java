@@ -134,14 +134,18 @@ public class RestClient {
     }
 
     //To można wykorzystać jednocześnie do tworzenia urzytkownika i do logowania się
-    public RequestResult send_user_data(String username, String password, String op)
+    public RequestResult send_user_data(String username, String password, String old_refresh_token, String op)
             throws IOException {
         JSONObject jo = new JSONObject();
+        JSONObject inner_jo = new JSONObject();
         String url = String.format("%s/users/%s", SERVER_IP, op);
 
         try {
-            jo.put("user", new JSONObject());
-            jo.getJSONObject("user").put("name", username).put("password", password);
+            inner_jo.put("name", username);
+            inner_jo.put("password", password);
+            jo.put("user", inner_jo);
+            if (old_refresh_token != null && !old_refresh_token.isEmpty())
+                jo.put("refresh_token", old_refresh_token);
 
             return doPOST(url, "", jo.toString());
         } catch (JSONException ex) {

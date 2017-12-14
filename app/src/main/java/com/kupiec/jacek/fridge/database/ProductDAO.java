@@ -40,11 +40,16 @@ public class ProductDAO {
         return get_all_products_that(selection, selectionArgs);
     }
 
-    public List<ProductDBEntitiy> getAllUpdatedProducts() {
-        String selection = "updated = ?";
-        String[] selectionArgs = { "1" };
+    public boolean isThereAnyChanges() {
+        String selection = "new = ? OR removed = ? OR updated = ?";
+        String[] selectionArgs = { "1", "1", "1" };
+        SQLiteDatabase db = db_mng.getReadableDatabase();
+        Cursor cursor = db.query(table_name, new String[] { "id" }, selection, selectionArgs, null, null, null);
+        boolean result = cursor.moveToFirst();
 
-        return get_all_products_that(selection, selectionArgs);
+        db.close();
+
+        return result;
     }
 
     public List<ProductDBEntitiy> getAllProducts() {
