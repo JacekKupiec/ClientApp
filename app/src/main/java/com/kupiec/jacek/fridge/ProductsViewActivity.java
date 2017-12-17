@@ -38,7 +38,7 @@ public class ProductsViewActivity extends AppCompatActivity {
     public static final int PRODUCT_MODIFIED = 5;
 
     private String token = null;
-    private ArrayAdapter<ListViewItem> adapter = null;
+    private ArrayAdapter<ListViewItem> adapter;
     private RestClient client = new RestClient();
     private ProductDAO dao;
 
@@ -46,10 +46,13 @@ public class ProductsViewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_products_view);
+
         this.dao = new ProductDAO(getApplicationContext());
+        this.adapter = new ArrayAdapter<>(this, R.layout.list_item);
 
         ListView listView = findViewById(R.id.listView);
         listView.setOnItemClickListener(get_list_view_listener());
+        listView.setAdapter(this.adapter);
 
         launch_sync_task();
     }
@@ -81,13 +84,6 @@ public class ProductsViewActivity extends AppCompatActivity {
 
     public synchronized void setToken(String token) {
         this.token = token;
-    }
-
-    public synchronized void setAdapter(List<ListViewItem> list) {
-        ListView listView = findViewById(R.id.listView);
-
-        this.adapter = new ArrayAdapter<>(this, R.layout.list_item, list);
-        listView.setAdapter(this.adapter);
     }
 
     @Override
@@ -171,7 +167,11 @@ public class ProductsViewActivity extends AppCompatActivity {
             try {
                 RequestResult result = client.refresh(ref_token);
                 JSONObject jo = result.getResponseBodyJSONObject();
-                SyncTask task = new SyncTask(this, ref_token, jo.getString(r.getString(R.string.token)));
+                String new_token = jo.getString(r.getString(R.string.token));
+
+                this.token = Utilities.update_access_token(this.token, new_token);
+
+                SyncTask task = new SyncTask(this.adapter, ref_token, this.token, dao);
 
                 task.execute();
             } catch (JSONException ex) {
@@ -201,7 +201,14 @@ public class ProductsViewActivity extends AppCompatActivity {
             try {
                 RequestResult result = client.refresh(ref_token);
                 JSONObject jo = result.getResponseBodyJSONObject();
-                ReloadTask task = new ReloadTask(this, ref_token, jo.getString(r.getString(R.string.token)));
+                String new_token = jo.getString(r.getString(R.string.token));
+
+                this.token = Utilities.update_access_token(this.token, new_token);
+
+                ReloadTask task = new ReloadTask(this.adapter,
+                        ref_token,
+                        this.token,
+                        dao);
 
                 task.execute();
             } catch (JSONException ex) {

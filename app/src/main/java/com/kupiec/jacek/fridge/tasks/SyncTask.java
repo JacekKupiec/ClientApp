@@ -2,6 +2,7 @@ package com.kupiec.jacek.fridge.tasks;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.kupiec.jacek.fridge.ListViewItem;
@@ -28,16 +29,16 @@ import java.util.List;
 
 
 public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
-    private ProductsViewActivity activity;
+    private ArrayAdapter<ListViewItem> adapter;
     private String refresh_token;
     private String access_token;
     private ProductDAO dao;
 
-    public SyncTask(ProductsViewActivity actvity, String refresh_token, String token) {
-        this.activity = activity;
+    public SyncTask(ArrayAdapter<ListViewItem> adapter, String refresh_token, String token, ProductDAO dao) {
+        this.adapter = adapter;
         this.refresh_token = refresh_token;
         this.access_token = token;
-        this.dao = new ProductDAO(this.activity.getApplicationContext());
+        this.dao = dao;
     }
 
     @Override
@@ -102,7 +103,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         item.getString("store_name"),
                         item.getDouble("price"),
                         item.getInt("amount"),
-                        0, 0, 0, 0,
+                        0, 0, 0, 0, //Tu subtotal na 0 bo istnieja już inne delty
                         item.getLong("id"),
                         item.getString("guid")
                     );
@@ -110,7 +111,15 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                     this.dao.addProduct(new_product);
                 }
                 else {
-                    this.dao.updateTotalAmount(product.getId(), item.getInt("amount"));
+                    result = client.sync_subsum(ref_tok, tok, product.getId(), product.getSubtotal());
+
+                    if (result.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        JSONObject jj = result.getResponseBodyJSONObject();
+
+                        product.setTotal(jj.getInt("amount"));
+                        product.setUpdated(0);
+                        this.dao.updateProduct(product);
+                    }
                 }
             }
         } catch (InvalidRefreshTokenException ex) {
@@ -139,11 +148,11 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
     @Override
     protected void onPostExecute(List<ListViewItem> result) {
         if (result == null) {
-            Toast.makeText(activity, "Synchronizacja nie powiodła się, spróbuj jeszcze raz", Toast.LENGTH_SHORT).show();
             Log.d("Synchronization FAILED", "Nie udało się poprawnie wykonać synchronizacji");
         } else {
-            activity.setAdapter(result);
-            activity.setToken(this.access_token);
+            this.adapter.clear();
+            this.adapter.addAll(result);
+            this.adapter.notifyDataSetChanged();
             Log.d("Synchronization SUCCEED", "Synchronizację przeprowadzono poprawnie :)");
         }
     }

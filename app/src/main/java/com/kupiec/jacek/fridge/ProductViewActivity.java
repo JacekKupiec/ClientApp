@@ -43,6 +43,7 @@ public class ProductViewActivity extends AppCompatActivity {
         this.result_intent.putExtra(r.getString(R.string.position),
             intent.getIntExtra(r.getString(R.string.position),0));
         this.result_intent.putExtra(r.getString(R.string.should_reload), false);
+        this.dao = new ProductDAO(getApplicationContext());
 
         ListViewItem item = (ListViewItem)intent.getSerializableExtra(r.getString(R.string.product));
 
@@ -94,6 +95,10 @@ public class ProductViewActivity extends AppCompatActivity {
             startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
         } catch (IOException ex) {
             this.dao.setAsRemoved(item.getId());
+            this.edited = false;
+            this.result_intent.putExtra(r.getString(R.string.product_status), ProductsViewActivity.PRODUCT_REMOVED);
+            setResult(Activity.RESULT_OK, this.result_intent);
+            finish();
         }
     }
 
@@ -145,6 +150,7 @@ public class ProductViewActivity extends AppCompatActivity {
         } catch (JSONException ex) {
             Log.e("JSONException", "Nie udało się przetworzyć odpowiedzi z serwera");
         } catch (IOException ex) {
+            this.edited = true;
             amountTextView.setText(String.valueOf(item.getAmount() - delta));
             this.dao.changeSubtotalBy(item.getId(), -delta);
             this.dao.changeTotalAmountBy(item.getId(), -delta);
@@ -160,6 +166,7 @@ public class ProductViewActivity extends AppCompatActivity {
         ListViewItem item = (ListViewItem)in_intent.getSerializableExtra(r.getString(R.string.product));
         EditText amountEditText = findViewById(R.id.amountEditText);
         TextView amountTextView = findViewById(R.id.amountTextView);
+        ProductDBEntitiy product = this.dao.getProductById(item.getId());
 
         if (amountEditText.getText().toString().isEmpty()) {
             Toast.makeText(this, "Musisz podać o ile zwiększyć", Toast.LENGTH_SHORT).show();
@@ -169,13 +176,11 @@ public class ProductViewActivity extends AppCompatActivity {
         int delta = Integer.parseInt(amountEditText.getText().toString());
 
         try {
-            ProductDBEntitiy product = this.dao.getProductById(item.getId());
             RequestResult result = this.client.increase_amount(refresh_token,
                     this.access_token,
                     product.getRemoteId(),
                     delta);
             JSONObject jo;
-
 
             update_access_token(result);
 
@@ -201,10 +206,11 @@ public class ProductViewActivity extends AppCompatActivity {
         } catch (JSONException ex) {
             Log.e("JSONException", "Nie udalo sie przetworzy codpowiedzi z serwera");
         } catch (IOException ex) {
-            amountTextView.setText(String.valueOf(item.getAmount() + delta));
-            this.dao.changeSubtotalBy(item.getId(), delta);
-            this.dao.changeTotalAmountBy(item.getId(), delta);
-            this.dao.setAsUpdated(item.getId());
+            this.edited = true;
+            amountTextView.setText(String.valueOf(product.getTotal() + delta));
+            this.dao.changeSubtotalBy(product.getId(), delta);
+            this.dao.changeTotalAmountBy(product.getId(), delta);
+            this.dao.setAsUpdated(product.getId());
         }
     }
 

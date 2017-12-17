@@ -79,7 +79,8 @@ public class CreateProductActivity extends AppCompatActivity {
                         product.getStoreName(),
                         product.getPrice(),
                         product.getAmount(),
-                        0, 0, 0, 0,
+                        product.getAmount(), //Skoro utowrzyłem cały produkt to mam u siebie jedyna deltę
+                        0, 0, 0,
                         remote_id,
                         product.getGUID()));
 
@@ -105,7 +106,8 @@ public class CreateProductActivity extends AppCompatActivity {
                     product.getStoreName(),
                     product.getPrice(),
                     product.getAmount(),
-                    0, 1, 0, 0,
+                    product.getAmount(),
+                    1, 0, 0,
                     -1,
                     product.getGUID()));
 

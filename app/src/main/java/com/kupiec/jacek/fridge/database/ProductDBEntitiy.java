@@ -54,7 +54,7 @@ public class ProductDBEntitiy {
         ContentValues values = new ContentValues();
 
         values.put("name", this.name);
-        values.put("stor_name", this.store_name);
+        values.put("store_name", this.store_name);
         values.put("price", this.price);
         values.put("total_amount", this.total);
         values.put("subtotal_amount", this.subtotal);

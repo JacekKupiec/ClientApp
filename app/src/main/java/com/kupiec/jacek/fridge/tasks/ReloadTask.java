@@ -2,10 +2,9 @@ package com.kupiec.jacek.fridge.tasks;
 
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
+import android.widget.ArrayAdapter;
 
 import com.kupiec.jacek.fridge.ListViewItem;
-import com.kupiec.jacek.fridge.ProductsViewActivity;
 import com.kupiec.jacek.fridge.Utilities;
 import com.kupiec.jacek.fridge.database.ProductDAO;
 import com.kupiec.jacek.fridge.database.ProductDBEntitiy;
@@ -26,19 +25,20 @@ import java.util.List;
  */
 
 public class ReloadTask extends AsyncTask<Void, Void, List<ListViewItem>> {
-    private ProductsViewActivity activity;
+    private ArrayAdapter<ListViewItem> adapter;
     private String refresh_token;
     private String access_token;
+    private ProductDAO dao;
 
-    public ReloadTask(ProductsViewActivity activity, String refresh_token, String token) {
-        this.activity = activity;
+    public ReloadTask(ArrayAdapter<ListViewItem> adapter, String refresh_token, String token, ProductDAO dao) {
+        this.adapter = adapter;
         this.refresh_token = refresh_token;
         this.access_token = token;
+        this.dao = dao;
     }
 
     @Override
     protected List<ListViewItem> doInBackground(Void... args) {
-        ProductDAO dao = new ProductDAO(this.activity.getApplicationContext());
         RestClient client = new RestClient();
         String ref_tok = this.refresh_token, tok = this.access_token;
         List<ListViewItem> list = new LinkedList<>();
@@ -59,7 +59,7 @@ public class ReloadTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         item.getString("store_name"),
                         item.getDouble("price"),
                         item.getInt("amount"),
-                        0, 0, 0, 0,
+                        0,0, 0, 0, //Tu musi być 0 bo moga juz istnieć inne delty
                         item.getLong("id"),
                         item.getString("guid"));
 
@@ -85,11 +85,11 @@ public class ReloadTask extends AsyncTask<Void, Void, List<ListViewItem>> {
     @Override
     protected void onPostExecute(List<ListViewItem> result) {
         if (result == null) {
-            Toast.makeText(activity, "Odświeżenie nie powiodło się, spróbuj jeszcze raz", Toast.LENGTH_SHORT).show();
             Log.d("Reload FAILED", "Nie udało się poprawnie wykonać synchronizacji");
         } else {
-            activity.setAdapter(result);
-            activity.setToken(this.access_token);
+            this.adapter.clear();
+            this.adapter.addAll(result);
+            this.adapter.notifyDataSetChanged();
             Log.d("Reload SUCCEED", "Odświeżanie przeprowadzono poprawnie :)");
         }
     }
