@@ -13,6 +13,7 @@ import com.kupiec.jacek.fridge.net.InvalidRefreshTokenException;
 import com.kupiec.jacek.fridge.net.RequestResult;
 import com.kupiec.jacek.fridge.net.RestClient;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,21 +31,23 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
     private ProductsViewActivity activity;
     private String refresh_token;
     private String access_token;
+    private ProductDAO dao;
 
     public SyncTask(ProductsViewActivity actvity, String refresh_token, String token) {
         this.activity = activity;
         this.refresh_token = refresh_token;
         this.access_token = token;
+        this.dao = new ProductDAO(this.activity.getApplicationContext());
     }
 
     @Override
     protected List<ListViewItem> doInBackground(Void... args) {
-        ProductDAO dao = new ProductDAO(this.activity.getApplicationContext());
+
         RestClient client = new RestClient();
         String ref_tok = this.refresh_token, tok = this.access_token;
 
 
-        for (ProductDBEntitiy product: dao.getAllNewProducts()) {
+        for (ProductDBEntitiy product: this.dao.getAllNewProducts()) {
             try {
                 RequestResult result = client.add_product(ref_tok, tok, product.toProductNet());
                 JSONObject jo = result.getResponseBodyJSONObject();
@@ -52,7 +55,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
                 product.setNew(0);
                 product.setRemoteId(jo.getInt("id"));
-                dao.updateProduct(product);
+                this.dao.updateProduct(product);
             } catch (InvalidRefreshTokenException ex) {
                 Log.e("InvalidRefershToken",
                    "Nie można wykonać operacji ponieważ refresh token, który został podany nie działa");
@@ -62,24 +65,24 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                 return null; //Nie ma połączenia z internetem
             } catch (JSONException ex) {
                 Log.e("JSONException", "Nieprawidłowy format odpowiedzi z serwera");
-                return null;
+                return Utilities.load_from_db(this.dao);
             }
         }
 
-        for (ProductDBEntitiy product: dao.getAllProductsToRemove()) {
+        for (ProductDBEntitiy product: this.dao.getAllProductsToRemove()) {
             try {
                 RequestResult result = client.delete_product(ref_tok, tok, product.getRemoteId());
                 tok = Utilities.update_access_token(tok, result.getRefreshedAccessToken());
 
                 if (result.getResponseCode() == HttpURLConnection.HTTP_OK)
-                    dao.removeProduct(product.getId());
+                    this.dao.removeProduct(product.getId());
             } catch (InvalidRefreshTokenException ex) {
                 Log.e("InvalidRefershToken",
                         "Nie można wykonać operacji ponieważ refresh token, który został podany nie działa");
                 return null;
             } catch (IOException ex) {
                 Log.d("IOException", "Brak połączenia z Internetem");
-                return null; //Nie ma połączenia z internetem
+                return Utilities.load_from_db(this.dao); //Nie ma połączenia z internetem
             }
         }
 
@@ -87,24 +90,27 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
             RequestResult result = client.get_products(ref_tok, tok);
             JSONObject jo = result.getResponseBodyJSONObject();
             tok = Utilities.update_access_token(tok, result.getRefreshedAccessToken());
+            JSONArray jt = jo.getJSONArray("products");
 
-            for (ListViewItem item : Utilities.convert_json_to_list(jo)) {
-                ProductDBEntitiy product = dao.getProduct(item);
+            for (int i = 0; i < jt.length(); i++) {
+                JSONObject item = jt.getJSONObject(i);
+                ProductDBEntitiy product = this.dao.getProductByRemoteId(item.getLong("id"));
 
                 if (product == null) {
                     ProductDBEntitiy new_product = new ProductDBEntitiy(
-                        item.getName(),
-                        item.getStoreName(),
-                        item.getPrice(),
-                        item.getAmount(),
+                        item.getString("name"),
+                        item.getString("store_name"),
+                        item.getDouble("price"),
+                        item.getInt("amount"),
                         0, 0, 0, 0,
-                        item.getId()
+                        item.getLong("id"),
+                        item.getString("guid")
                     );
 
-                    dao.addProduct(new_product);
+                    this.dao.addProduct(new_product);
                 }
                 else {
-                    dao.updateTotalAmount(product.getId(), item.getAmount());
+                    this.dao.updateTotalAmount(product.getId(), item.getInt("amount"));
                 }
             }
         } catch (InvalidRefreshTokenException ex) {
@@ -113,7 +119,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
             return null;
         } catch (IOException ex) {
             Log.d("IOException", "Brak połączenia z Internetem");
-            return null; //Nie ma połączenia z internetem
+            return Utilities.load_from_db(this.dao); //Nie ma połączenia z internetem
         } catch (JSONException ex) {
             Log.e("JSONException", "Nieprawidłowy format odpowiedzi z serwera");
             return null;
@@ -121,8 +127,8 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
         List<ListViewItem> list = new LinkedList<>();
 
-        for (ProductDBEntitiy product: dao.getAllProducts()) {
-            list.add(product.toProductNet().toListViewItem(product.getRemoteId()));
+        for (ProductDBEntitiy product: this.dao.getAllProducts()) {
+            list.add(product.toListViewItem());
         }
 
         this.access_token = tok;

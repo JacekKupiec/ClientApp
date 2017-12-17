@@ -11,12 +11,14 @@ public class ProductNet {
     private String store_name;
     private double price;
     private int amount;
+    private String guid;
 
-    public ProductNet(String name, String store_name, double price, int amount) {
+    public ProductNet(String name, String store_name, double price, int amount, String GUID) {
         this.name = name;
         this.store_name = store_name;
         this.price = price;
         this.amount = amount;
+        this.guid = GUID;
     }
 
     public ListViewItem toListViewItem(long id) {
@@ -57,5 +59,9 @@ public class ProductNet {
 
     public void setAmount(int amount) {
         this.amount = amount;
+    }
+
+    public String getGUID() {
+        return guid;
     }
 }

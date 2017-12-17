@@ -3,6 +3,7 @@ package com.kupiec.jacek.fridge.database;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.kupiec.jacek.fridge.ListViewItem;
 import com.kupiec.jacek.fridge.net.ProductNet;
 
 /**
@@ -20,20 +21,9 @@ public class ProductDBEntitiy {
     private int removed;
     private int updated;
     private long remote_id;
+    private String guid;
 
-    public ProductDBEntitiy(int id, String name, String store_name, double price, int subtotal, int _new, int removed, int updated, long remote_id) {
-        this.id = id;
-        this.name = name;
-        this.store_name = store_name;
-        this.price = price;
-        this.subtotal = subtotal;
-        this._new = _new;
-        this.removed = removed;
-        this.updated = updated;
-        this.remote_id = remote_id;
-    }
-
-    public ProductDBEntitiy(String name, String store_name, double price, int total, int subtotal, int _new, int removed, int updated, long remote_id) {
+    public ProductDBEntitiy(String name, String store_name, double price, int total, int subtotal, int _new, int removed, int updated, long remote_id, String guid) {
         this.name = name;
         this.store_name = store_name;
         this.price = price;
@@ -43,6 +33,7 @@ public class ProductDBEntitiy {
         this.removed = removed;
         this.updated = updated;
         this.remote_id = remote_id;
+        this.guid = guid;
     }
 
     public ProductDBEntitiy(Cursor c) {
@@ -56,6 +47,7 @@ public class ProductDBEntitiy {
         this._new = c.getInt(7);
         this.removed = c.getInt(8);
         this.updated = c.getInt(9);
+        this.guid = c.getString(10);
     }
 
     public ContentValues getContentValues() {
@@ -70,12 +62,21 @@ public class ProductDBEntitiy {
         values.put("new", this._new);
         values.put("removed", this.removed);
         values.put("updated", this.updated);
+        values.put("guid", this.guid);
 
         return values;
     }
 
     public ProductNet toProductNet() {
-        return new ProductNet(this.name, this.store_name, this.price, this.total);
+        return new ProductNet(this.name, this.store_name, this.price, this.total, this.guid);
+    }
+
+    public ListViewItem toListViewItem() {
+        return new ListViewItem(getId(),
+                getName(),
+                getStoreName(),
+                getPrice(),
+                getTotal());
     }
 
     public int getId() {
@@ -156,5 +157,9 @@ public class ProductDBEntitiy {
 
     public void setTotal(int total) {
         this.total = total;
+    }
+
+    public String getGUID() {
+        return this.guid;
     }
 }

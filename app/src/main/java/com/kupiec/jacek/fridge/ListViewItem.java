@@ -12,11 +12,6 @@ public class ListViewItem implements Serializable {
     private String name;
     private String store_name;
     private double price;
-    private int subtotal;
-    private int _new;
-    private int removed;
-    private int updated;
-    private int remote_id;
 
     public ListViewItem(long id, String name, String store_name, double price, int amount) {
         this.id = id;
@@ -69,43 +64,5 @@ public class ListViewItem implements Serializable {
 
     public void setPrice(double price) {
         this.price = price;
-    }
-
-    public int getSubtotal() {
-        return subtotal;
-    }
-
-    public void setSubtotal(int subtotal) {
-        this.subtotal = subtotal;
-    }
-
-    public int isNew() {
-        return _new;
-    }
-
-    public void setNew(int _new) {
-        this._new = _new;
-    }
-
-    public int isRemoved() {
-        return removed;
-    }
-
-    public void setRemoved(int removed) {
-        this.removed = removed;
-    }
-
-    public int getRemote_id() {
-        return remote_id;
-    }
-
-    public int isUpdated() {
-        return updated;
-    }
-
-    public void setUpdated(int updated) { this.updated = updated; }
-
-    public void setRemote_id(int remote_id) {
-        this.remote_id = remote_id;
     }
 }

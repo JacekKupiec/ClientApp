@@ -13,6 +13,7 @@ import com.kupiec.jacek.fridge.net.InvalidRefreshTokenException;
 import com.kupiec.jacek.fridge.net.RequestResult;
 import com.kupiec.jacek.fridge.net.RestClient;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -42,33 +43,35 @@ public class ReloadTask extends AsyncTask<Void, Void, List<ListViewItem>> {
         String ref_tok = this.refresh_token, tok = this.access_token;
         List<ListViewItem> list = new LinkedList<>();
 
-        //Reload oznacza ,że użytkownik się przelogował,
-        // trzeba usunąć ślady poprzedniego
+        //Reload oznacza ,że użytkownik się przelogował, trzeba usunąć ślady poprzedniego
         dao.truncateProductsTable();
 
         try {
             RequestResult result = client.get_products(ref_tok, tok);
             tok = Utilities.update_access_token(tok, result.getRefreshedAccessToken());
             JSONObject jo = result.getResponseBodyJSONObject();
+            JSONArray jt = jo.getJSONArray("products");
 
-            for (ListViewItem item: Utilities.convert_json_to_list(jo)) {
+            for (int i = 0; i < jt.length(); i++) {
+                JSONObject item = jt.getJSONObject(i);
                 ProductDBEntitiy product = new ProductDBEntitiy(
-                        item.getName(),
-                        item.getStoreName(),
-                        item.getPrice(),
-                        item.getAmount(),
+                        item.getString("name"),
+                        item.getString("store_name"),
+                        item.getDouble("price"),
+                        item.getInt("amount"),
                         0, 0, 0, 0,
-                        item.getId());
+                        item.getLong("id"),
+                        item.getString("guid"));
 
                 dao.addProduct(product);
-                list.add(item);
+                list.add(product.toListViewItem());
             }
         } catch (InvalidRefreshTokenException ex) {
             Log.e("InvalidRefTokenExc", "Nie udało się wysłąć ");
             return null;
         } catch (IOException ex) {
             Log.d("IOException", "Brak połączenia z Internetem");
-            return null; //Nie ma połączenia z internetem
+            return Utilities.load_from_db(dao); //Nie ma połączenia z internetem
         } catch (JSONException ex) {
             Log.e("JSONException", "Nie udalo się przetworzyć odpowiedzi z serwera");
             return null;

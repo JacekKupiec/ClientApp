@@ -40,12 +40,13 @@ public class ProductsViewActivity extends AppCompatActivity {
     private String token = null;
     private ArrayAdapter<ListViewItem> adapter = null;
     private RestClient client = new RestClient();
-    private ProductDAO dao = new ProductDAO(getApplicationContext());
+    private ProductDAO dao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_products_view);
+        this.dao = new ProductDAO(getApplicationContext());
 
         ListView listView = findViewById(R.id.listView);
         listView.setOnItemClickListener(get_list_view_listener());
@@ -92,7 +93,6 @@ public class ProductsViewActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Resources r = getResources();
-        SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
         String new_token;
 
         switch (requestCode) {
@@ -112,8 +112,7 @@ public class ProductsViewActivity extends AppCompatActivity {
                 break;
             case LOG_IN_ACTIVITY:
                 if (resultCode == Activity.RESULT_OK) {
-                    boolean should_reload = data.getBooleanExtra(r.getString(R.string.should_reload),
-                            false);
+                    boolean should_reload = data.getBooleanExtra(r.getString(R.string.should_reload), false);
 
                     if (should_reload) launch_reload_task();
                 }
@@ -135,7 +134,7 @@ public class ProductsViewActivity extends AppCompatActivity {
                     else if (product_state == PRODUCT_REMOVED)
                         this.adapter.remove(item);
                     else if (product_state == PRODUCT_MODIFIED) {
-                        ProductDBEntitiy product = this.dao.getProduct(item);
+                        ProductDBEntitiy product = this.dao.getProductById(item.getId());
 
                         item.setAmount(product.getTotal());
                     }

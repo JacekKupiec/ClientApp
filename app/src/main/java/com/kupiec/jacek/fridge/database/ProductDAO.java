@@ -52,6 +52,13 @@ public class ProductDAO {
         return result;
     }
 
+    public List<ProductDBEntitiy> getAllNotRemoved() {
+        String selection = "removed = ?";
+        String[] selectionArgs = { "0" };
+
+        return get_all_products_that(selection, selectionArgs);
+    }
+
     public List<ProductDBEntitiy> getAllProducts() {
         return get_all_products_that(null, null);
     }
@@ -60,10 +67,26 @@ public class ProductDAO {
         db_mng.getWritableDatabase().execSQL("DELETE FROM products");
     }
 
-    public ProductDBEntitiy getProduct(ListViewItem item) {
+    public ProductDBEntitiy getProductById(long id) {
+        SQLiteDatabase db = db_mng.getReadableDatabase();
+        String selection = "id = ?";
+        String[] selectionArgs = { String.valueOf(id) };
+        ProductDBEntitiy product = null;
+
+        Cursor cursor = db.query(table_name, columns, selection, selectionArgs, null, null, null);
+
+        if (cursor.moveToFirst())
+            product = new ProductDBEntitiy(cursor);
+
+        db.close();
+
+        return product;
+    }
+
+    public ProductDBEntitiy getProductByRemoteId(long remote_id) {
         SQLiteDatabase db = db_mng.getReadableDatabase();
         String selection = "remote_id = ?";
-        String[] selectionArgs = { String.valueOf(item.getId()) };
+        String[] selectionArgs = { String.valueOf(remote_id) };
         ProductDBEntitiy product = null;
 
         Cursor cursor = db.query(table_name, columns, selection, selectionArgs, null, null, null);

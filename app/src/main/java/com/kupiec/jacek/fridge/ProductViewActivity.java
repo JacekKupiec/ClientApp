@@ -30,7 +30,7 @@ public class ProductViewActivity extends AppCompatActivity {
     private Intent result_intent = new Intent();
     private boolean edited = false;
     private RestClient client = new RestClient();
-    private ProductDAO dao = new ProductDAO(getApplicationContext());
+    private ProductDAO dao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,9 +63,10 @@ public class ProductViewActivity extends AppCompatActivity {
         String refresh_token = sp.getString(r.getString(R.string.refresh_token), null);
         Intent in_intent = getIntent();
         ListViewItem item = (ListViewItem)in_intent.getSerializableExtra(r.getString(R.string.product));
+        this. dao = new ProductDAO(getApplicationContext());
 
         try {
-            ProductDBEntitiy product = this.dao.getProduct(item);
+            ProductDBEntitiy product = this.dao.getProductById(item.getId());
             RequestResult result = this.client.delete_product(refresh_token,
                     this.access_token,
                     product.getRemoteId());
@@ -113,7 +114,7 @@ public class ProductViewActivity extends AppCompatActivity {
         int delta = Integer.parseInt(amountEditText.getText().toString());
 
         try {
-            ProductDBEntitiy product = this.dao.getProduct(item);
+            ProductDBEntitiy product = this.dao.getProductById(item.getId());
             RequestResult result = this.client.decrease_amount(refresh_token,
                     this.access_token,
                     product.getRemoteId(),
@@ -168,7 +169,7 @@ public class ProductViewActivity extends AppCompatActivity {
         int delta = Integer.parseInt(amountEditText.getText().toString());
 
         try {
-            ProductDBEntitiy product = this.dao.getProduct(item);
+            ProductDBEntitiy product = this.dao.getProductById(item.getId());
             RequestResult result = this.client.increase_amount(refresh_token,
                     this.access_token,
                     product.getRemoteId(),

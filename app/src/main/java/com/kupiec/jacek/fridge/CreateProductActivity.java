@@ -22,12 +22,13 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.UUID;
 
 public class CreateProductActivity extends AppCompatActivity {
     private RestClient client = new RestClient();
     private Intent result_intent = new Intent();
     private String access_token;
-    private ProductDAO dao = new ProductDAO(this.getApplicationContext());
+    private ProductDAO dao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,7 @@ public class CreateProductActivity extends AppCompatActivity {
         Intent intent = getIntent();
         this.access_token = intent.getStringExtra(r.getString(R.string.token));
         this.result_intent.putExtra(r.getString(R.string.should_reload), false);
+        this.dao = new ProductDAO(this.getApplicationContext());
     }
 
     //TODO: można wpisywać dużo produktów, nie trzeba wychodzić z aktywności po jednym dodaniu
@@ -61,7 +63,7 @@ public class CreateProductActivity extends AppCompatActivity {
         String store_name = storeNameEditText.getText().toString();
         double price = round_price(priceEditText.getText().toString());
         int amount = get_amount(amountEditText.getText().toString());
-        ProductNet product = new ProductNet(name, store_name, price, amount);
+        ProductNet product = new ProductNet(name, store_name, price, amount, UUID.randomUUID().toString());
 
         try {
             RequestResult result = this.client.add_product(refresh_token, this.access_token, product);
@@ -78,7 +80,8 @@ public class CreateProductActivity extends AppCompatActivity {
                         product.getPrice(),
                         product.getAmount(),
                         0, 0, 0, 0,
-                        remote_id));
+                        remote_id,
+                        product.getGUID()));
 
                 this.result_intent.putExtra(r.getString(R.string.product), product.toListViewItem(db_id));
                 setResult(Activity.RESULT_OK, this.result_intent);
@@ -103,7 +106,8 @@ public class CreateProductActivity extends AppCompatActivity {
                     product.getPrice(),
                     product.getAmount(),
                     0, 1, 0, 0,
-                    -1));
+                    -1,
+                    product.getGUID()));
 
             this.result_intent.putExtra(r.getString(R.string.product), product.toListViewItem(db_id));
             setResult(Activity.RESULT_OK, this.result_intent);

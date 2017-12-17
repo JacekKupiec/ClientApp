@@ -33,13 +33,14 @@ import java.net.HttpURLConnection;
 
 public class LogInActivity extends AppCompatActivity {
     private RestClient client = new RestClient();
-    private ProductDAO dao = new ProductDAO(getApplicationContext());
+    private ProductDAO dao;
     private boolean drop_out_changes = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
+        this.dao = new ProductDAO(getApplicationContext());
     }
 
     public void onClickLogInButton(View view) {
@@ -66,17 +67,16 @@ public class LogInActivity extends AppCompatActivity {
 
             if (result.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 Intent intent = new Intent();
-
                 JSONObject jo = result.getResponseBodyJSONObject();
                 String refresh_token = jo.getString(r.getString(R.string.refresh_token));
                 String refresh_token_expiration_date = jo.getString(
                         r.getString(R.string.refresh_token_expiration_date));
+                boolean should_reload = jo.getBoolean(r.getString(R.string.should_reload));
 
                 result = this.client.refresh(refresh_token);
                 jo = result.getResponseBodyJSONObject();
 
                 String token = jo.getString(r.getString(R.string.token));
-                int should_reload = jo.getInt(r.getString(R.string.should_reload));
 
                 intent.putExtra(r.getString(R.string.token), token);
                 intent.putExtra(r.getString(R.string.should_reload), should_reload);
@@ -118,12 +118,10 @@ public class LogInActivity extends AppCompatActivity {
 
             if (result.getResponseCode() == HttpURLConnection.HTTP_CREATED) {
                 Intent intent = new Intent();
-
                 JSONObject jo = result.getResponseBodyJSONObject();
                 String refresh_token = jo.getString(r.getString(R.string.refresh_token));
                 String refresh_token_exppiration_date = jo.getString(
                         r.getString(R.string.refresh_token_expiration_date));
-
                 String token = jo.getString(r.getString(R.string.token));
 
                 intent.putExtra(r.getString(R.string.token), token);

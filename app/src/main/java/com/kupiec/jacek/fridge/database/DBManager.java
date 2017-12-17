@@ -16,16 +16,17 @@ public class DBManager extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String stmt = "CREATE TABLE IF NOT EXISTS products (" +
-                "id int primary key autoincrement," +
+                "id integer primary key autoincrement," +
                 "name text," +
                 "store_name text," +
                 "price real," +
-                "total_amount int," +
-                "subtotal_amount int," +
-                "remote_id int," +
-                "new int," +
-                "removed int," +
-                "updated int);";
+                "total_amount integer," +
+                "subtotal_amount integer," +
+                "remote_id integer," +
+                "new integer," +
+                "removed integer," +
+                "updated integer," +
+                "guid text);";
         db.execSQL(stmt);
     }
 

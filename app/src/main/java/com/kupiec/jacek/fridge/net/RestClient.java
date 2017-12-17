@@ -30,7 +30,9 @@ public class RestClient {
             p.put("store_name", product.getStoreName());
             if (product.getPrice() >= 0) p.put("price", product.getPrice());
             if (product.getAmount() >= 0) p.put("amount", product.getAmount());
+            p.put("guid", product.getGUID());
             jo.put("product", p);
+
             result = doPOST(SERVER_IP + "/products", token, jo.toString());
 
             String new_token = refresh_access_token_if_necessary(result, refresh_token);
@@ -144,10 +146,8 @@ public class RestClient {
             inner_jo.put("name", username);
             inner_jo.put("password", password);
             jo.put("user", inner_jo);
-            if (old_refresh_token != null && !old_refresh_token.isEmpty())
-                jo.put("refresh_token", old_refresh_token);
 
-            return doPOST(url, "", jo.toString());
+            return doPOST(url, old_refresh_token, jo.toString());
         } catch (JSONException ex) {
             Log.e("JSONException", "Nie udalo sie utworzyc pliku JSON");
         }
