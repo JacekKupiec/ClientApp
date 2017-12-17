@@ -71,6 +71,14 @@ public class ProductDBEntitiy {
         return new ProductNet(this.name, this.store_name, this.price, this.total, this.guid);
     }
 
+    public ListViewItem toListViewItem(long id) {
+        return new ListViewItem(id,
+                getName(),
+                getStoreName(),
+                getPrice(),
+                getTotal());
+    }
+
     public ListViewItem toListViewItem() {
         return new ListViewItem(getId(),
                 getName(),

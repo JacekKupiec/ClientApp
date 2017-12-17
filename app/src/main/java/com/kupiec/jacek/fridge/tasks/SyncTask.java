@@ -3,10 +3,8 @@ package com.kupiec.jacek.fridge.tasks;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
 
 import com.kupiec.jacek.fridge.ListViewItem;
-import com.kupiec.jacek.fridge.ProductsViewActivity;
 import com.kupiec.jacek.fridge.Utilities;
 import com.kupiec.jacek.fridge.database.ProductDAO;
 import com.kupiec.jacek.fridge.database.ProductDBEntitiy;
@@ -92,6 +90,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
             JSONObject jo = result.getResponseBodyJSONObject();
             tok = Utilities.update_access_token(tok, result.getRefreshedAccessToken());
             JSONArray jt = jo.getJSONArray("products");
+            LinkedList<Long> to_not_delete = new LinkedList<>();
 
             for (int i = 0; i < jt.length(); i++) {
                 JSONObject item = jt.getJSONObject(i);
@@ -108,10 +107,11 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         item.getString("guid")
                     );
 
-                    this.dao.addProduct(new_product);
+                    long id = this.dao.addProduct(new_product);
+                    to_not_delete.add(id);
                 }
                 else {
-                    result = client.sync_subsum(ref_tok, tok, product.getId(), product.getSubtotal());
+                    result = client.sync_subsum(ref_tok, tok, product.getRemoteId(), product.getSubtotal());
 
                     if (result.getResponseCode() == HttpURLConnection.HTTP_OK) {
                         JSONObject jj = result.getResponseBodyJSONObject();
@@ -119,9 +119,12 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         product.setTotal(jj.getInt("amount"));
                         product.setUpdated(0);
                         this.dao.updateProduct(product);
+                        to_not_delete.add((long)product.getId());
                     }
                 }
             }
+
+            dao.deleteAllThatNotIn(to_not_delete.toArray(new Long[to_not_delete.size()]));
         } catch (InvalidRefreshTokenException ex) {
             Log.e("InvalidRefershToken",
                     "Nie można wykonać operacji ponieważ refresh token, który został podany nie działa");

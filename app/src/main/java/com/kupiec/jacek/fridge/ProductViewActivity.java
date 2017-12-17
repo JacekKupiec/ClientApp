@@ -64,7 +64,6 @@ public class ProductViewActivity extends AppCompatActivity {
         String refresh_token = sp.getString(r.getString(R.string.refresh_token), null);
         Intent in_intent = getIntent();
         ListViewItem item = (ListViewItem)in_intent.getSerializableExtra(r.getString(R.string.product));
-        this. dao = new ProductDAO(getApplicationContext());
 
         try {
             ProductDBEntitiy product = this.dao.getProductById(item.getId());

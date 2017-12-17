@@ -63,8 +63,8 @@ public class ReloadTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         item.getLong("id"),
                         item.getString("guid"));
 
-                dao.addProduct(product);
-                list.add(product.toListViewItem());
+                long db_id = dao.addProduct(product);
+                list.add(product.toListViewItem(db_id));
             }
         } catch (InvalidRefreshTokenException ex) {
             Log.e("InvalidRefTokenExc", "Nie udało się wysłąć ");

@@ -5,11 +5,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 import com.kupiec.jacek.fridge.ListViewItem;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * Created by jacek on 10.12.17.
@@ -65,6 +67,15 @@ public class ProductDAO {
 
     public void truncateProductsTable() {
         db_mng.getWritableDatabase().execSQL("DELETE FROM products");
+    }
+
+    public void deleteAllThatNotIn(Long[] array) {
+        String s = TextUtils.join(",", array);
+
+        SQLiteDatabase db = db_mng.getWritableDatabase();
+
+        int res = db.delete(table_name, "id NOT IN (" + s +")", null);
+        db.close();
     }
 
     public ProductDBEntitiy getProductById(long id) {
