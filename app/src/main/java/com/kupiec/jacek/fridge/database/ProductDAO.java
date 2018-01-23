@@ -21,7 +21,7 @@ public class ProductDAO {
     private static DBManager db_mng = null;
     private String table_name = "products";
     private String[] columns = { "id", "name", "store_name", "price", "total_amount",
-            "subtotal_amount", "remote_id", "new", "removed", "updated", "guid" };
+            "subtotal_amount", "remote_id", "new", "removed", "updated", "guid", "brand" };
 
     public ProductDAO(Context ctx) {
         if (db_mng == null)

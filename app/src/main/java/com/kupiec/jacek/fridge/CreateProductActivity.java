@@ -52,6 +52,7 @@ public class CreateProductActivity extends AppCompatActivity {
         EditText storeNameEditText = findViewById(R.id.nameOfStoreEditText);
         EditText priceEditText = findViewById(R.id.priceofProductEditText);
         EditText amountEditText = findViewById(R.id.amountOfProductEditText);
+        EditText brandEditText = findViewById(R.id.brandOfProductEditText);
 
         String name = nameEditText.getText().toString();
 
@@ -61,9 +62,15 @@ public class CreateProductActivity extends AppCompatActivity {
         }
 
         String store_name = storeNameEditText.getText().toString();
+        String brand = brandEditText.getText().toString();
         double price = round_price(priceEditText.getText().toString());
         int amount = get_amount(amountEditText.getText().toString());
-        ProductNet product = new ProductNet(name, store_name, price, amount, UUID.randomUUID().toString());
+        ProductNet product = new ProductNet(name,
+                store_name,
+                price,
+                amount,
+                UUID.randomUUID().toString(),
+                brand);
 
         try {
             RequestResult result = this.client.add_product(refresh_token, this.access_token, product);
@@ -79,10 +86,11 @@ public class CreateProductActivity extends AppCompatActivity {
                         product.getStoreName(),
                         product.getPrice(),
                         product.getAmount(),
-                        product.getAmount(), //Skoro utowrzyłem cały produkt to mam u siebie jedyna deltę
+                        product.getAmount(), //Skoro utowrzyłem cały produkt to mam u siebie jedyną deltę
                         0, 0, 0,
                         remote_id,
-                        product.getGUID()));
+                        product.getGUID(),
+                        product.getBrand()));
 
                 this.result_intent.putExtra(r.getString(R.string.product), product.toListViewItem(db_id));
                 setResult(Activity.RESULT_OK, this.result_intent);
@@ -109,7 +117,8 @@ public class CreateProductActivity extends AppCompatActivity {
                     product.getAmount(),
                     1, 0, 0,
                     -1,
-                    product.getGUID()));
+                    product.getGUID(),
+                    product.getBrand()));
 
             this.result_intent.putExtra(r.getString(R.string.product), product.toListViewItem(db_id));
             setResult(Activity.RESULT_OK, this.result_intent);

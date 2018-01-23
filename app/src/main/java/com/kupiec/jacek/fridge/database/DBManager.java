@@ -26,7 +26,8 @@ public class DBManager extends SQLiteOpenHelper {
                 "new integer," +
                 "removed integer," +
                 "updated integer," +
-                "guid text);";
+                "guid text," +
+                "brand text);";
         db.execSQL(stmt);
     }
 

@@ -61,7 +61,8 @@ public class ReloadTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         item.getInt("amount"),
                         0,0, 0, 0, //Tu musi być 0 bo moga juz istnieć inne delty
                         item.getLong("id"),
-                        item.getString("guid"));
+                        item.getString("guid"),
+                        item.getString("brand"));
 
                 long db_id = dao.addProduct(product);
                 list.add(product.toListViewItem(db_id));

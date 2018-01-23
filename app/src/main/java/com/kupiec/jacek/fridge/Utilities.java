@@ -45,12 +45,13 @@ public class Utilities {
         for (int i = 0; i < ja.length(); i++) {
             JSONObject product = ja.getJSONObject(i);
             String name = product.getString("name"),
-                    store_name = product.getString("store_name");
+                    store_name = product.getString("store_name"),
+                    brand = product.getString("brand");
             double price = product.getDouble("price");
             int id = product.getInt("id"),
                     amount = product.getInt("amount");
 
-            list.add(new ListViewItem(id, name, store_name, price, amount));
+            list.add(new ListViewItem(id, name, store_name, price, amount, brand));
         }
 
         return list;

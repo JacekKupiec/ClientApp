@@ -22,8 +22,11 @@ public class ProductDBEntitiy {
     private int updated;
     private long remote_id;
     private String guid;
+    private String brand;
 
-    public ProductDBEntitiy(String name, String store_name, double price, int total, int subtotal, int _new, int removed, int updated, long remote_id, String guid) {
+    public ProductDBEntitiy(String name, String store_name, double price, int total,
+                            int subtotal, int _new, int removed, int updated, long remote_id,
+                            String guid, String brand) {
         this.name = name;
         this.store_name = store_name;
         this.price = price;
@@ -34,6 +37,7 @@ public class ProductDBEntitiy {
         this.updated = updated;
         this.remote_id = remote_id;
         this.guid = guid;
+        this.brand = brand;
     }
 
     public ProductDBEntitiy(Cursor c) {
@@ -48,6 +52,7 @@ public class ProductDBEntitiy {
         this.removed = c.getInt(8);
         this.updated = c.getInt(9);
         this.guid = c.getString(10);
+        this.brand = c.getString(11);
     }
 
     public ContentValues getContentValues() {
@@ -63,12 +68,18 @@ public class ProductDBEntitiy {
         values.put("removed", this.removed);
         values.put("updated", this.updated);
         values.put("guid", this.guid);
+        values.put("brand", this.brand);
 
         return values;
     }
 
     public ProductNet toProductNet() {
-        return new ProductNet(this.name, this.store_name, this.price, this.total, this.guid);
+        return new ProductNet(this.name,
+                this.store_name,
+                this.price,
+                this.total,
+                this.guid,
+                this.brand);
     }
 
     public ListViewItem toListViewItem(long id) {
@@ -76,7 +87,8 @@ public class ProductDBEntitiy {
                 getName(),
                 getStoreName(),
                 getPrice(),
-                getTotal());
+                getTotal(),
+                getBrand());
     }
 
     public ListViewItem toListViewItem() {
@@ -84,7 +96,8 @@ public class ProductDBEntitiy {
                 getName(),
                 getStoreName(),
                 getPrice(),
-                getTotal());
+                getTotal(),
+                getBrand());
     }
 
     public int getId() {
@@ -170,4 +183,6 @@ public class ProductDBEntitiy {
     public String getGUID() {
         return this.guid;
     }
+
+    public String getBrand() { return this.brand; }
 }

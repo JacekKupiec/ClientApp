@@ -51,11 +51,13 @@ public class ProductViewActivity extends AppCompatActivity {
         TextView storeNameTextView = findViewById(R.id.storeNameTextView);
         TextView priceTextView = findViewById(R.id.priceTextView);
         TextView amountTextView = findViewById(R.id.amountTextView);
+        TextView brandTextView = findViewById(R.id.brandTextView);
 
         nameTextView.setText(item.getName());
         storeNameTextView.setText(item.getStoreName());
         priceTextView.setText(String.valueOf(item.getPrice()));
         amountTextView.setText(String.valueOf(item.getAmount()));
+        brandTextView.setText(item.getBrand());
     }
 
     public void onRemoveProductButtonClick(View view) {

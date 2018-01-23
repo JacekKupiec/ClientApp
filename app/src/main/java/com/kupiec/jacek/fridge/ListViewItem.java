@@ -12,13 +12,15 @@ public class ListViewItem implements Serializable {
     private String name;
     private String store_name;
     private double price;
+    private String brand;
 
-    public ListViewItem(long id, String name, String store_name, double price, int amount) {
+    public ListViewItem(long id, String name, String store_name, double price, int amount, String brand) {
         this.id = id;
         this.name = name;
         this.store_name = store_name;
         this.price = price;
         this.amount = amount;
+        this.brand = brand;
     }
 
     @Override
@@ -65,4 +67,6 @@ public class ListViewItem implements Serializable {
     public void setPrice(double price) {
         this.price = price;
     }
+
+    public String getBrand() { return this.brand; }
 }

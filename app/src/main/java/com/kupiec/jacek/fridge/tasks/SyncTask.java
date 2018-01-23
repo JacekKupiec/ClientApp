@@ -104,7 +104,8 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         item.getInt("amount"),
                         0, 0, 0, 0, //Tu subtotal na 0 bo istnieja już inne delty
                         item.getLong("id"),
-                        item.getString("guid")
+                        item.getString("guid"),
+                        item.getString("brand")
                     );
 
                     long id = this.dao.addProduct(new_product);
