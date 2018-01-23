@@ -31,6 +31,7 @@ public class RestClient {
             if (product.getPrice() >= 0) p.put("price", product.getPrice());
             if (product.getAmount() >= 0) p.put("amount", product.getAmount());
             p.put("guid", product.getGUID());
+            p.put("brand", product.getBrand());
             jo.put("product", p);
 
             result = doPOST(SERVER_IP + "/products", token, jo.toString());
