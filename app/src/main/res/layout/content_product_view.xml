@@ -34,7 +34,8 @@
         app:layout_constraintBottom_toTopOf="@+id/removeProductButton"
         app:layout_constraintEnd_toStartOf="@+id/decreaseAmountButton"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amountEditText" />
+        app:layout_constraintTop_toBottomOf="@+id/amountEditText"
+        app:layout_constraintVertical_bias="0.086" />
 
     <Button
         android:id="@+id/decreaseAmountButton"
@@ -49,7 +50,8 @@
         app:layout_constraintBottom_toTopOf="@+id/removeProductButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/increaseAmountButton"
-        app:layout_constraintTop_toBottomOf="@+id/amountEditText" />
+        app:layout_constraintTop_toBottomOf="@+id/amountEditText"
+        app:layout_constraintVertical_bias="0.086" />
 
     <EditText
         android:id="@+id/amountEditText"
@@ -78,7 +80,7 @@
         app:layout_constraintBottom_toTopOf="@+id/amountEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.100000024" />
+        app:layout_constraintVertical_bias="0" />
 
     <TextView
         android:id="@+id/textView2"
@@ -91,7 +93,7 @@
         app:layout_constraintBottom_toTopOf="@+id/amountEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.264" />
+        app:layout_constraintVertical_bias="0.18" />
 
     <TextView
         android:id="@+id/textView3"
@@ -104,7 +106,7 @@
         app:layout_constraintBottom_toTopOf="@+id/amountEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.415" />
+        app:layout_constraintVertical_bias="0.36" />
 
     <TextView
         android:id="@+id/textView4"
@@ -117,7 +119,7 @@
         app:layout_constraintBottom_toTopOf="@+id/amountEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.538" />
+        app:layout_constraintVertical_bias="0.54" />
 
     <TextView
         android:id="@+id/nameTextView"
@@ -131,7 +133,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.100000024" />
+        app:layout_constraintVertical_bias="0" />
 
     <TextView
         android:id="@+id/storeNameTextView"
@@ -146,7 +148,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/textView2"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.264" />
+        app:layout_constraintVertical_bias="0.18" />
 
     <TextView
         android:id="@+id/priceTextView"
@@ -160,7 +162,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView3"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.415" />
+        app:layout_constraintVertical_bias="0.36" />
 
     <TextView
         android:id="@+id/amountTextView"
@@ -174,7 +176,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView4"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.538" />
+        app:layout_constraintVertical_bias="0.54" />
 
     <TextView
         android:id="@+id/textView5"
@@ -187,7 +189,7 @@
         app:layout_constraintBottom_toTopOf="@+id/amountEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.683" />
+        app:layout_constraintVertical_bias="0.72" />
 
     <TextView
         android:id="@+id/brandTextView"
@@ -201,7 +203,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView5"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.68" />
+        app:layout_constraintVertical_bias="0.72" />
 
     <Button
         android:id="@+id/removeFromGroupButton"
@@ -210,6 +212,7 @@
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
+        android:onClick="onRemoveFromGroupButtonClick"
         android:text="remove from group"
         app:layout_constraintBottom_toTopOf="@+id/removeProductButton"
         app:layout_constraintEnd_toEndOf="parent"
@@ -226,7 +229,7 @@
         app:layout_constraintBottom_toTopOf="@+id/amountEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.83" />
+        app:layout_constraintVertical_bias="0.90" />
 
     <TextView
         android:id="@+id/groupNameView"
@@ -240,6 +243,33 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView6"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.83" />
+        app:layout_constraintVertical_bias="0.90" />
+
+    <Button
+        android:id="@+id/addToGroupButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:elevation="0dp"
+        android:onClick="onAddToGroupButtonClick"
+        android:text="Add to group"
+        app:layout_constraintBottom_toTopOf="@+id/removeFromGroupButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/increaseAmountButton" />
+
+    <Spinner
+        android:id="@+id/addGroupSpinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/removeFromGroupButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/addToGroupButton"
+        app:layout_constraintTop_toBottomOf="@+id/decreaseAmountButton" />
 
 </android.support.constraint.ConstraintLayout>

@@ -36,7 +36,8 @@ public class DBManager extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int odlVersion, int newVersion) {
         String stmt = "CREATE TABLE IF NOT EXISTS groups (" +
                 "id integer primary key autoincrement" +
-                "name text);";
+                "name text," +
+                "remote_id integer default -1);";
         db.execSQL(stmt);
     }
 }

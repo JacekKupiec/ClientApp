@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -59,14 +60,18 @@ public class ProductViewActivity extends AppCompatActivity {
         TextView groupNameView = findViewById(R.id.groupNameView);
 
         ProductDBEntity product = productDAO.getProductById(item.getId());
-        GroupDBEntity group = groupDAO.getGroup(product.getGroupId());
+        GroupDBEntity group = groupDAO.getGroupByRemoteId(product.getGroupId());
 
         nameTextView.setText(item.getName());
         storeNameTextView.setText(item.getStoreName());
         priceTextView.setText(String.valueOf(item.getPrice()));
         amountTextView.setText(String.valueOf(item.getAmount()));
         brandTextView.setText(item.getBrand());
-        groupNameView.setText(group.getName());
+
+        if (group != null)
+            groupNameView.setText(group.getName());
+        else
+            groupNameView.setText("");
     }
 
     public void onRemoveProductButtonClick(View view) {
@@ -224,7 +229,7 @@ public class ProductViewActivity extends AppCompatActivity {
         }
     }
 
-    public void onRemoveFromGroupButton(View view) {
+    public void onRemoveFromGroupButtonClick(View view) {
         Resources r = getResources();
         SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
         String refresh_token = sp.getString(r.getString(R.string.refresh_token), null);
@@ -234,10 +239,8 @@ public class ProductViewActivity extends AppCompatActivity {
         TextView groupNameTextView = findViewById(R.id.groupNameView);
 
         if (product.getGroupId() > -1) {
-            GroupDBEntity group = groupDAO.getGroup(product.getGroupId());
-
             try {
-                RequestResult result = client.removeProductFromGroup(refresh_token,
+                RequestResult result = client.remove_product_from_group(refresh_token,
                         this.access_token,
                         product.getGroupId(),
                         product.getRemoteId());
@@ -258,11 +261,11 @@ public class ProductViewActivity extends AppCompatActivity {
                         Log.e("UNAUTHORIZED", "Próba usunięcia produktu, który nie należał do użytkownika");
                         break;
                 }
-
             } catch (InvalidRefreshTokenException ex) {
                 Intent intent = new Intent(this, LogInActivity.class);
                 startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
             } catch (IOException ex) {
+                this.edited = true;
                 groupNameTextView.setText("");
                 product.setGroupId(-1);
                 product.setUpdated(1);
@@ -271,6 +274,56 @@ public class ProductViewActivity extends AppCompatActivity {
         }
 
         Toast.makeText(this, "Produkt usunięto z grupy", Toast.LENGTH_SHORT).show();
+    }
+
+    public void onAddToGroupButtonClick(View view) {
+        Resources r = getResources();
+        SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
+        String refresh_token = sp.getString(r.getString(R.string.refresh_token), null);
+        Intent in_intent = getIntent();
+        ListViewItem item = (ListViewItem)in_intent.getSerializableExtra(r.getString(R.string.product));
+        ProductDBEntity product = productDAO.getProductById(item.getId());
+        TextView groupNameTextView = findViewById(R.id.groupNameView);
+        Spinner addToGroupSpinner = findViewById(R.id.addGroupSpinner);
+        SpinnerItem spinnerItem = (SpinnerItem)addToGroupSpinner.getSelectedItem();
+
+        if (spinnerItem == null) {
+            Toast.makeText(this, "Należy wybrać grupę", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            RequestResult result = client.add_product_to_group(refresh_token,
+                    this.access_token,
+                    spinnerItem.getRemoteId(),
+                    product.getRemoteId());
+
+            update_access_token(result);
+
+            switch (result.getResponseCode()) {
+                case HttpURLConnection.HTTP_OK:
+                    this.edited = true;
+                    groupNameTextView.setText(spinnerItem.getName());
+                    product.setGroupId(spinnerItem.getRemoteId());
+                    productDAO.updateProduct(product);
+                    break;
+                case HttpURLConnection.HTTP_BAD_REQUEST:
+                    Log.e("BAD REQUEST", "Podano niewłaściwe parametry do usuniecia produktu");
+                    break;
+                case HttpURLConnection.HTTP_UNAUTHORIZED:
+                    Log.e("UNAUTHORIZED", "Próba usunięcia produktu, który nie należał do użytkownika");
+                    break;
+            }
+        } catch (InvalidRefreshTokenException ex) {
+            Intent intent = new Intent(this, LogInActivity.class);
+            startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
+        } catch (IOException ex) {
+            this.edited = true;
+            groupNameTextView.setText(spinnerItem.getName());
+            product.setGroupId(spinnerItem.getRemoteId());
+            product.setUpdated(1);
+            productDAO.updateProduct(product);
+        }
     }
 
     @Override

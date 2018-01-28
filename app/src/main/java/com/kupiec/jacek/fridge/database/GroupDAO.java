@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.Nullable;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
 public class GroupDAO {
     private static DBManager db_mng = null;
     private String table_name = "groups";
-    private String[] columns = { "id", "name" };
+    private String[] columns = { "id", "name", "remote_id" };
 
     public GroupDAO(Context ctx) {
         if (db_mng == null)
@@ -28,6 +29,22 @@ public class GroupDAO {
 
     public GroupDBEntity getGroup(long id) {
         return get_element_by_id(id);
+    }
+
+    @Nullable
+    public GroupDBEntity getGroupByRemoteId(long id) {
+        SQLiteDatabase db = db_mng.getReadableDatabase();
+        String selection = "remote_id = ?";
+        String[] selection_args = new String[] { String.valueOf(id) };
+        Cursor cursor = db.query(table_name, columns, selection, selection_args, null, null, null);
+        GroupDBEntity group = null;
+
+        if (cursor.moveToFirst())
+             group = new GroupDBEntity(cursor);
+
+        db.close();
+
+        return group;
     }
 
     public void removeGroup(int id) {

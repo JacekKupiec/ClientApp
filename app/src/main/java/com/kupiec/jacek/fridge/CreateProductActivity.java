@@ -14,6 +14,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.kupiec.jacek.fridge.database.GroupDAO;
+import com.kupiec.jacek.fridge.database.GroupDBEntity;
 import com.kupiec.jacek.fridge.database.ProductDAO;
 import com.kupiec.jacek.fridge.database.ProductDBEntity;
 import com.kupiec.jacek.fridge.net.InvalidRefreshTokenException;
@@ -27,6 +28,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.List;
 import java.util.UUID;
 
 public class CreateProductActivity extends AppCompatActivity {
@@ -53,23 +55,10 @@ public class CreateProductActivity extends AppCompatActivity {
         this.productDAO = new ProductDAO(this.getApplicationContext());
         this.adapter = new ArrayAdapter<SpinnerItem>(this, R.layout.list_item);
 
-        try {
-            RequestResult result = client.get_groups(refresh_token, this.access_token);
-            JSONArray ja = result.getResponseBodyJSONObject().getJSONArray("groups");
+        List<GroupDBEntity> groups = groupDAO.getAllGroups();
 
-            for (int i =0; i < ja.length(); i++) {
-                JSONObject jo = ja.getJSONObject(i);
-
-                this.adapter.add(new SpinnerItem(jo.getLong("id"), jo.getString("name")));
-            }
-
-        } catch (InvalidRefreshTokenException ex) {
-            Log.e("InvalidRefTokenExc", "Uzytkownik niezalogowany");
-        } catch (IOException ex) {
-            Log.e("IOException", "Nie ma dostępu do internetu");
-        } catch (JSONException ex) {
-            Log.e("JSONException", "Nie udało się przetworzyc odpowiedzi z serwera");
-        }
+        for (GroupDBEntity g: groups)
+            this.adapter.add(new SpinnerItem(g.getRemoteId(), g.getName()));
 
         groupSpinner.setAdapter(this.adapter);
     }
