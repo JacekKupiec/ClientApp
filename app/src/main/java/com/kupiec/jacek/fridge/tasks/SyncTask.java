@@ -7,7 +7,7 @@ import android.widget.ArrayAdapter;
 import com.kupiec.jacek.fridge.ListViewItem;
 import com.kupiec.jacek.fridge.Utilities;
 import com.kupiec.jacek.fridge.database.ProductDAO;
-import com.kupiec.jacek.fridge.database.ProductDBEntitiy;
+import com.kupiec.jacek.fridge.database.ProductDBEntity;
 import com.kupiec.jacek.fridge.net.InvalidRefreshTokenException;
 import com.kupiec.jacek.fridge.net.RequestResult;
 import com.kupiec.jacek.fridge.net.RestClient;
@@ -46,7 +46,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
         String ref_tok = this.refresh_token, tok = this.access_token;
 
 
-        for (ProductDBEntitiy product: this.dao.getAllNewProducts()) {
+        for (ProductDBEntity product: this.dao.getAllNewProducts()) {
             try {
                 RequestResult result = client.add_product(ref_tok, tok, product.toProductNet());
                 JSONObject jo = result.getResponseBodyJSONObject();
@@ -68,7 +68,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
             }
         }
 
-        for (ProductDBEntitiy product: this.dao.getAllProductsToRemove()) {
+        for (ProductDBEntity product: this.dao.getAllProductsToRemove()) {
             try {
                 RequestResult result = client.delete_product(ref_tok, tok, product.getRemoteId());
                 tok = Utilities.update_access_token(tok, result.getRefreshedAccessToken());
@@ -94,10 +94,10 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
             for (int i = 0; i < jt.length(); i++) {
                 JSONObject item = jt.getJSONObject(i);
-                ProductDBEntitiy product = this.dao.getProductByRemoteId(item.getLong("id"));
+                ProductDBEntity product = this.dao.getProductByRemoteId(item.getLong("id"));
 
                 if (product == null) {
-                    ProductDBEntitiy new_product = new ProductDBEntitiy(
+                    ProductDBEntity new_product = new ProductDBEntity(
                         item.getString("name"),
                         item.getString("store_name"),
                         item.getDouble("price"),
@@ -105,7 +105,8 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         0, 0, 0, 0, //Tu subtotal na 0 bo istnieja już inne delty
                         item.getLong("id"),
                         item.getString("guid"),
-                        item.getString("brand")
+                        item.getString("brand"),
+                        item.getInt("group_id")
                     );
 
                     long id = this.dao.addProduct(new_product);
@@ -140,7 +141,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
         List<ListViewItem> list = new LinkedList<>();
 
-        for (ProductDBEntitiy product: this.dao.getAllProducts()) {
+        for (ProductDBEntity product: this.dao.getAllProducts()) {
             list.add(product.toListViewItem());
         }
 

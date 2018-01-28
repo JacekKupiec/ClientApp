@@ -26,4 +26,5 @@
     <string name="position">position</string>
     <string name="should_reload">should reload</string>
     <string name="not_saved_data_message">Masz niezapisane zmiany. Jeśli będziesz procedował dalej to utracisz je wszystkie. Czy chcesz kontynuować?</string>
+    <string name="title_activity_groups">GroupsActivity</string>
 </resources>

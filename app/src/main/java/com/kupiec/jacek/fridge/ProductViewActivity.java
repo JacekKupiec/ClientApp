@@ -13,8 +13,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.kupiec.jacek.fridge.database.GroupDAO;
+import com.kupiec.jacek.fridge.database.GroupDBEntity;
 import com.kupiec.jacek.fridge.database.ProductDAO;
-import com.kupiec.jacek.fridge.database.ProductDBEntitiy;
+import com.kupiec.jacek.fridge.database.ProductDBEntity;
 import com.kupiec.jacek.fridge.net.InvalidRefreshTokenException;
 import com.kupiec.jacek.fridge.net.RequestResult;
 import com.kupiec.jacek.fridge.net.RestClient;
@@ -30,7 +32,8 @@ public class ProductViewActivity extends AppCompatActivity {
     private Intent result_intent = new Intent();
     private boolean edited = false;
     private RestClient client = new RestClient();
-    private ProductDAO dao;
+    private ProductDAO productDAO;
+    private GroupDAO groupDAO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +46,8 @@ public class ProductViewActivity extends AppCompatActivity {
         this.result_intent.putExtra(r.getString(R.string.position),
             intent.getIntExtra(r.getString(R.string.position),0));
         this.result_intent.putExtra(r.getString(R.string.should_reload), false);
-        this.dao = new ProductDAO(getApplicationContext());
+        this.productDAO = new ProductDAO(getApplicationContext());
+        this.groupDAO = new GroupDAO(getApplicationContext());
 
         ListViewItem item = (ListViewItem)intent.getSerializableExtra(r.getString(R.string.product));
 
@@ -52,12 +56,17 @@ public class ProductViewActivity extends AppCompatActivity {
         TextView priceTextView = findViewById(R.id.priceTextView);
         TextView amountTextView = findViewById(R.id.amountTextView);
         TextView brandTextView = findViewById(R.id.brandTextView);
+        TextView groupNameView = findViewById(R.id.groupNameView);
+
+        ProductDBEntity product = productDAO.getProductById(item.getId());
+        GroupDBEntity group = groupDAO.getGroup(product.getGroupId());
 
         nameTextView.setText(item.getName());
         storeNameTextView.setText(item.getStoreName());
         priceTextView.setText(String.valueOf(item.getPrice()));
         amountTextView.setText(String.valueOf(item.getAmount()));
         brandTextView.setText(item.getBrand());
+        groupNameView.setText(group.getName());
     }
 
     public void onRemoveProductButtonClick(View view) {
@@ -68,7 +77,7 @@ public class ProductViewActivity extends AppCompatActivity {
         ListViewItem item = (ListViewItem)in_intent.getSerializableExtra(r.getString(R.string.product));
 
         try {
-            ProductDBEntitiy product = this.dao.getProductById(item.getId());
+            ProductDBEntity product = this.productDAO.getProductById(item.getId());
             RequestResult result = this.client.delete_product(refresh_token,
                     this.access_token,
                     product.getRemoteId());
@@ -80,7 +89,7 @@ public class ProductViewActivity extends AppCompatActivity {
                     this.edited = false;
                     this.result_intent.putExtra(r.getString(R.string.product_status), ProductsViewActivity.PRODUCT_REMOVED);
 
-                    this.dao.removeProdukt(product);
+                    this.productDAO.removeProduct(product);
                     setResult(Activity.RESULT_OK, this.result_intent);
                     finish();
                     break;
@@ -95,7 +104,7 @@ public class ProductViewActivity extends AppCompatActivity {
             Intent intent = new Intent(this, LogInActivity.class);
             startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
         } catch (IOException ex) {
-            this.dao.setAsRemoved(item.getId());
+            this.productDAO.setAsRemoved(item.getId());
             this.edited = false;
             this.result_intent.putExtra(r.getString(R.string.product_status), ProductsViewActivity.PRODUCT_REMOVED);
             setResult(Activity.RESULT_OK, this.result_intent);
@@ -120,7 +129,7 @@ public class ProductViewActivity extends AppCompatActivity {
         int delta = Integer.parseInt(amountEditText.getText().toString());
 
         try {
-            ProductDBEntitiy product = this.dao.getProductById(item.getId());
+            ProductDBEntity product = this.productDAO.getProductById(item.getId());
             RequestResult result = this.client.decrease_amount(refresh_token,
                     this.access_token,
                     product.getRemoteId(),
@@ -134,8 +143,8 @@ public class ProductViewActivity extends AppCompatActivity {
                     this.edited = true;
                     jo = result.getResponseBodyJSONObject();
                     amountTextView.setText(convert_amount(jo));
-                    this.dao.updateTotalAmount(product.getId(), jo.getInt(r.getString(R.string.product_amount)));
-                    this.dao.changeSubtotalBy(product.getId(), -delta);
+                    this.productDAO.updateTotalAmount(product.getId(), jo.getInt(r.getString(R.string.product_amount)));
+                    this.productDAO.changeSubtotalBy(product.getId(), -delta);
                     break;
                 case HttpURLConnection.HTTP_BAD_REQUEST:
                     Log.e("BAD REQUEST", "Podano niewłaściwe parametry do usuniecia produktu");
@@ -153,9 +162,9 @@ public class ProductViewActivity extends AppCompatActivity {
         } catch (IOException ex) {
             this.edited = true;
             amountTextView.setText(String.valueOf(item.getAmount() - delta));
-            this.dao.changeSubtotalBy(item.getId(), -delta);
-            this.dao.changeTotalAmountBy(item.getId(), -delta);
-            this.dao.setAsUpdated(item.getId());
+            this.productDAO.changeSubtotalBy(item.getId(), -delta);
+            this.productDAO.changeTotalAmountBy(item.getId(), -delta);
+            this.productDAO.setAsUpdated(item.getId());
         }
     }
 
@@ -167,7 +176,7 @@ public class ProductViewActivity extends AppCompatActivity {
         ListViewItem item = (ListViewItem)in_intent.getSerializableExtra(r.getString(R.string.product));
         EditText amountEditText = findViewById(R.id.amountEditText);
         TextView amountTextView = findViewById(R.id.amountTextView);
-        ProductDBEntitiy product = this.dao.getProductById(item.getId());
+        ProductDBEntity product = this.productDAO.getProductById(item.getId());
 
         if (amountEditText.getText().toString().isEmpty()) {
             Toast.makeText(this, "Musisz podać o ile zwiększyć", Toast.LENGTH_SHORT).show();
@@ -190,8 +199,8 @@ public class ProductViewActivity extends AppCompatActivity {
                     this.edited = true;
                     jo = result.getResponseBodyJSONObject();
                     amountTextView.setText(convert_amount(jo));
-                    this.dao.updateTotalAmount(product.getId(), jo.getInt(r.getString(R.string.product_amount)));
-                    this.dao.changeSubtotalBy(product.getId(), delta);
+                    this.productDAO.updateTotalAmount(product.getId(), jo.getInt(r.getString(R.string.product_amount)));
+                    this.productDAO.changeSubtotalBy(product.getId(), delta);
                     break;
                 case HttpURLConnection.HTTP_BAD_REQUEST:
                     Log.e("BAD REQUEST", "Podano niewłaściwe parametry do usuniecia produktu");
@@ -209,10 +218,59 @@ public class ProductViewActivity extends AppCompatActivity {
         } catch (IOException ex) {
             this.edited = true;
             amountTextView.setText(String.valueOf(product.getTotal() + delta));
-            this.dao.changeSubtotalBy(product.getId(), delta);
-            this.dao.changeTotalAmountBy(product.getId(), delta);
-            this.dao.setAsUpdated(product.getId());
+            this.productDAO.changeSubtotalBy(product.getId(), delta);
+            this.productDAO.changeTotalAmountBy(product.getId(), delta);
+            this.productDAO.setAsUpdated(product.getId());
         }
+    }
+
+    public void onRemoveFromGroupButton(View view) {
+        Resources r = getResources();
+        SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
+        String refresh_token = sp.getString(r.getString(R.string.refresh_token), null);
+        Intent in_intent = getIntent();
+        ListViewItem item = (ListViewItem)in_intent.getSerializableExtra(r.getString(R.string.product));
+        ProductDBEntity product = productDAO.getProductById(item.getId());
+        TextView groupNameTextView = findViewById(R.id.groupNameView);
+
+        if (product.getGroupId() > -1) {
+            GroupDBEntity group = groupDAO.getGroup(product.getGroupId());
+
+            try {
+                RequestResult result = client.removeProductFromGroup(refresh_token,
+                        this.access_token,
+                        product.getGroupId(),
+                        product.getRemoteId());
+
+                update_access_token(result);
+
+                switch (result.getResponseCode()) {
+                    case HttpURLConnection.HTTP_OK:
+                        this.edited = true;
+                        groupNameTextView.setText("");
+                        product.setGroupId(-1);
+                        productDAO.updateProduct(product);
+                        break;
+                    case HttpURLConnection.HTTP_BAD_REQUEST:
+                        Log.e("BAD REQUEST", "Podano niewłaściwe parametry do usuniecia produktu");
+                        break;
+                    case HttpURLConnection.HTTP_UNAUTHORIZED:
+                        Log.e("UNAUTHORIZED", "Próba usunięcia produktu, który nie należał do użytkownika");
+                        break;
+                }
+
+            } catch (InvalidRefreshTokenException ex) {
+                Intent intent = new Intent(this, LogInActivity.class);
+                startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
+            } catch (IOException ex) {
+                groupNameTextView.setText("");
+                product.setGroupId(-1);
+                product.setUpdated(1);
+                productDAO.updateProduct(product);
+            }
+        }
+
+        Toast.makeText(this, "Produkt usunięto z grupy", Toast.LENGTH_SHORT).show();
     }
 
     @Override

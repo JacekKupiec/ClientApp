@@ -10,7 +10,7 @@ import com.kupiec.jacek.fridge.net.ProductNet;
  * Created by jacek on 10.12.17.
  */
 
-public class ProductDBEntitiy {
+public class ProductDBEntity {
     private int id;
     private String name;
     private String store_name;
@@ -23,10 +23,12 @@ public class ProductDBEntitiy {
     private long remote_id;
     private String guid;
     private String brand;
+    private long group_id;
+    private long groupId;
 
-    public ProductDBEntitiy(String name, String store_name, double price, int total,
-                            int subtotal, int _new, int removed, int updated, long remote_id,
-                            String guid, String brand) {
+    public ProductDBEntity(String name, String store_name, double price, int total, int subtotal,
+                           int _new, int removed, int updated, long remote_id, String guid,
+                           String brand, long group_id) {
         this.name = name;
         this.store_name = store_name;
         this.price = price;
@@ -38,9 +40,10 @@ public class ProductDBEntitiy {
         this.remote_id = remote_id;
         this.guid = guid;
         this.brand = brand;
+        this.group_id = group_id;
     }
 
-    public ProductDBEntitiy(Cursor c) {
+    public ProductDBEntity(Cursor c) {
         this.id = c.getInt(0);
         this.name = c.getString(1);
         this.store_name = c.getString(2);
@@ -53,6 +56,7 @@ public class ProductDBEntitiy {
         this.updated = c.getInt(9);
         this.guid = c.getString(10);
         this.brand = c.getString(11);
+        this.group_id = c.getInt(12);
     }
 
     public ContentValues getContentValues() {
@@ -69,6 +73,7 @@ public class ProductDBEntitiy {
         values.put("updated", this.updated);
         values.put("guid", this.guid);
         values.put("brand", this.brand);
+        values.put("group_id", this.group_id);
 
         return values;
     }
@@ -79,7 +84,8 @@ public class ProductDBEntitiy {
                 this.price,
                 this.total,
                 this.guid,
-                this.brand);
+                this.brand,
+                this.group_id);
     }
 
     public ListViewItem toListViewItem(long id) {
@@ -185,4 +191,10 @@ public class ProductDBEntitiy {
     }
 
     public String getBrand() { return this.brand; }
+
+    public long getGroupId() { return this.group_id; }
+
+    public void setGroupId(long group_id) {
+        this.group_id = group_id;
+    }
 }

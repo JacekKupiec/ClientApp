@@ -7,7 +7,7 @@ import android.widget.ArrayAdapter;
 import com.kupiec.jacek.fridge.ListViewItem;
 import com.kupiec.jacek.fridge.Utilities;
 import com.kupiec.jacek.fridge.database.ProductDAO;
-import com.kupiec.jacek.fridge.database.ProductDBEntitiy;
+import com.kupiec.jacek.fridge.database.ProductDBEntity;
 import com.kupiec.jacek.fridge.net.InvalidRefreshTokenException;
 import com.kupiec.jacek.fridge.net.RequestResult;
 import com.kupiec.jacek.fridge.net.RestClient;
@@ -54,7 +54,7 @@ public class ReloadTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
             for (int i = 0; i < jt.length(); i++) {
                 JSONObject item = jt.getJSONObject(i);
-                ProductDBEntitiy product = new ProductDBEntitiy(
+                ProductDBEntity product = new ProductDBEntity(
                         item.getString("name"),
                         item.getString("store_name"),
                         item.getDouble("price"),
@@ -62,7 +62,8 @@ public class ReloadTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         0,0, 0, 0, //Tu musi być 0 bo moga juz istnieć inne delty
                         item.getLong("id"),
                         item.getString("guid"),
-                        item.getString("brand"));
+                        item.getString("brand"),
+                        item.getInt("group_id"));
 
                 long db_id = dao.addProduct(product);
                 list.add(product.toListViewItem(db_id));

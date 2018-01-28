@@ -8,17 +8,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.content.Intent;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.kupiec.jacek.fridge.database.GroupDAO;
 import com.kupiec.jacek.fridge.database.ProductDAO;
-import com.kupiec.jacek.fridge.database.ProductDBEntitiy;
+import com.kupiec.jacek.fridge.database.ProductDBEntity;
 import com.kupiec.jacek.fridge.net.InvalidRefreshTokenException;
 import com.kupiec.jacek.fridge.net.ProductNet;
 import com.kupiec.jacek.fridge.net.RequestResult;
 import com.kupiec.jacek.fridge.net.RestClient;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -28,7 +33,9 @@ public class CreateProductActivity extends AppCompatActivity {
     private RestClient client = new RestClient();
     private Intent result_intent = new Intent();
     private String access_token;
-    private ProductDAO dao;
+    private ProductDAO productDAO;
+    private GroupDAO groupDAO;
+    private ArrayAdapter<SpinnerItem> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,9 +44,34 @@ public class CreateProductActivity extends AppCompatActivity {
 
         Resources r = getResources();
         Intent intent = getIntent();
+        Spinner groupSpinner = findViewById(R.id.groupNameSpinner);
+        SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
+        String refresh_token = sp.getString(r.getString(R.string.refresh_token), null);
+
         this.access_token = intent.getStringExtra(r.getString(R.string.token));
         this.result_intent.putExtra(r.getString(R.string.should_reload), false);
-        this.dao = new ProductDAO(this.getApplicationContext());
+        this.productDAO = new ProductDAO(this.getApplicationContext());
+        this.adapter = new ArrayAdapter<SpinnerItem>(this, R.layout.list_item);
+
+        try {
+            RequestResult result = client.get_groups(refresh_token, this.access_token);
+            JSONArray ja = result.getResponseBodyJSONObject().getJSONArray("groups");
+
+            for (int i =0; i < ja.length(); i++) {
+                JSONObject jo = ja.getJSONObject(i);
+
+                this.adapter.add(new SpinnerItem(jo.getLong("id"), jo.getString("name")));
+            }
+
+        } catch (InvalidRefreshTokenException ex) {
+            Log.e("InvalidRefTokenExc", "Uzytkownik niezalogowany");
+        } catch (IOException ex) {
+            Log.e("IOException", "Nie ma dostępu do internetu");
+        } catch (JSONException ex) {
+            Log.e("JSONException", "Nie udało się przetworzyc odpowiedzi z serwera");
+        }
+
+        groupSpinner.setAdapter(this.adapter);
     }
 
     //TODO: można wpisywać dużo produktów, nie trzeba wychodzić z aktywności po jednym dodaniu
@@ -53,6 +85,7 @@ public class CreateProductActivity extends AppCompatActivity {
         EditText priceEditText = findViewById(R.id.priceofProductEditText);
         EditText amountEditText = findViewById(R.id.amountOfProductEditText);
         EditText brandEditText = findViewById(R.id.brandOfProductEditText);
+        Spinner groupSpinner = findViewById(R.id.groupNameSpinner);
 
         String name = nameEditText.getText().toString();
 
@@ -63,14 +96,18 @@ public class CreateProductActivity extends AppCompatActivity {
 
         String store_name = storeNameEditText.getText().toString();
         String brand = brandEditText.getText().toString();
+        SpinnerItem group = (SpinnerItem)groupSpinner.getSelectedItem();
         double price = round_price(priceEditText.getText().toString());
         int amount = get_amount(amountEditText.getText().toString());
+        long group_id = group != null ? group.getRemoteId() : -1;
+
         ProductNet product = new ProductNet(name,
                 store_name,
                 price,
                 amount,
                 UUID.randomUUID().toString(),
-                brand);
+                brand,
+                group_id);
 
         try {
             RequestResult result = this.client.add_product(refresh_token, this.access_token, product);
@@ -82,7 +119,7 @@ public class CreateProductActivity extends AppCompatActivity {
 
             if (result.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 int remote_id = result.getResponseBodyJSONObject().getInt("id");
-                long db_id = dao.addProduct(new ProductDBEntitiy(product.getName(),
+                long db_id = productDAO.addProduct(new ProductDBEntity(product.getName(),
                         product.getStoreName(),
                         product.getPrice(),
                         product.getAmount(),
@@ -90,7 +127,8 @@ public class CreateProductActivity extends AppCompatActivity {
                         0, 0, 0,
                         remote_id,
                         product.getGUID(),
-                        product.getBrand()));
+                        product.getBrand(),
+                        product.getGroupId()));
 
                 this.result_intent.putExtra(r.getString(R.string.product), product.toListViewItem(db_id));
                 setResult(Activity.RESULT_OK, this.result_intent);
@@ -110,7 +148,7 @@ public class CreateProductActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
             startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
         } catch (IOException ex) {
-            long db_id = dao.addProduct(new ProductDBEntitiy(product.getName(),
+            long db_id = productDAO.addProduct(new ProductDBEntity(product.getName(),
                     product.getStoreName(),
                     product.getPrice(),
                     product.getAmount(),
@@ -118,7 +156,8 @@ public class CreateProductActivity extends AppCompatActivity {
                     1, 0, 0,
                     -1,
                     product.getGUID(),
-                    product.getBrand()));
+                    product.getBrand(),
+                    product.getGroupId()));
 
             this.result_intent.putExtra(r.getString(R.string.product), product.toListViewItem(db_id));
             setResult(Activity.RESULT_OK, this.result_intent);

@@ -32,6 +32,7 @@ public class RestClient {
             if (product.getAmount() >= 0) p.put("amount", product.getAmount());
             p.put("guid", product.getGUID());
             p.put("brand", product.getBrand());
+            p.put("group_id", product.getGroupId());
             jo.put("product", p);
 
             result = doPOST(SERVER_IP + "/products", token, jo.toString());
@@ -169,6 +170,37 @@ public class RestClient {
             return result;
         else {
             result =  doGET(SERVER_IP + "/users/get_products", new_token);
+            result.setRefreshedAccessToken(new_token);
+
+            return result;
+        }
+    }
+
+    public RequestResult get_groups(String refresh_token, String token)
+            throws InvalidRefreshTokenException, IOException {
+        RequestResult result = doGET(SERVER_IP + "/users/get_groups", token);
+        String new_token = refresh_access_token_if_necessary(result, refresh_token);
+
+        if (new_token.isEmpty())
+            return result;
+        else {
+            result = doGET(SERVER_IP + "/users/get_groups", new_token);
+            result.setRefreshedAccessToken(new_token);
+
+            return result;
+        }
+    }
+
+    public RequestResult removeProductFromGroup(String refresh_token, String token, long group_id, long product_id)
+            throws InvalidRefreshTokenException, IOException {
+        String url = String.format("%s/groups/remove_product/%d/%d", SERVER_IP, group_id, product_id);
+        RequestResult result = doGET(url, token);
+        String new_token = refresh_access_token_if_necessary(result, refresh_token);
+
+        if (new_token.isEmpty())
+            return result;
+        else {
+            result = doGET(SERVER_IP + "/users/get_groups", new_token);
             result.setRefreshedAccessToken(new_token);
 
             return result;

@@ -7,11 +7,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
-import com.kupiec.jacek.fridge.ListViewItem;
-
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringJoiner;
 
 /**
  * Created by jacek on 10.12.17.
@@ -21,21 +18,26 @@ public class ProductDAO {
     private static DBManager db_mng = null;
     private String table_name = "products";
     private String[] columns = { "id", "name", "store_name", "price", "total_amount",
-            "subtotal_amount", "remote_id", "new", "removed", "updated", "guid", "brand" };
+            "subtotal_amount", "remote_id", "new", "removed", "updated", "guid", "brand", "group_id",
+            "group_name" };
 
     public ProductDAO(Context ctx) {
         if (db_mng == null)
             db_mng = new DBManager(ctx);
     }
 
-    public List<ProductDBEntitiy> getAllNewProducts() {
+    public List<ProductDBEntity> getAllProducts() {
+        return get_all_products_that(null, null);
+    }
+
+    public List<ProductDBEntity> getAllNewProducts() {
         String selection = "new = ?";
         String[] selectionArgs = { "1" };
 
         return get_all_products_that(selection, selectionArgs);
     }
 
-    public List<ProductDBEntitiy> getAllProductsToRemove() {
+    public List<ProductDBEntity> getAllProductsToRemove() {
         String selection = "removed = ?";
         String[] selectionArgs = { "1" };
 
@@ -54,15 +56,11 @@ public class ProductDAO {
         return result;
     }
 
-    public List<ProductDBEntitiy> getAllNotRemoved() {
+    public List<ProductDBEntity> getAllNotRemoved() {
         String selection = "removed = ?";
         String[] selectionArgs = { "0" };
 
         return get_all_products_that(selection, selectionArgs);
-    }
-
-    public List<ProductDBEntitiy> getAllProducts() {
-        return get_all_products_that(null, null);
     }
 
     public void truncateProductsTable() {
@@ -78,32 +76,32 @@ public class ProductDAO {
         db.close();
     }
 
-    public ProductDBEntitiy getProductById(long id) {
+    public ProductDBEntity getProductById(long id) {
         SQLiteDatabase db = db_mng.getReadableDatabase();
         String selection = "id = ?";
         String[] selectionArgs = { String.valueOf(id) };
-        ProductDBEntitiy product = null;
+        ProductDBEntity product = null;
 
         Cursor cursor = db.query(table_name, columns, selection, selectionArgs, null, null, null);
 
         if (cursor.moveToFirst())
-            product = new ProductDBEntitiy(cursor);
+            product = new ProductDBEntity(cursor);
 
         db.close();
 
         return product;
     }
 
-    public ProductDBEntitiy getProductByRemoteId(long remote_id) {
+    public ProductDBEntity getProductByRemoteId(long remote_id) {
         SQLiteDatabase db = db_mng.getReadableDatabase();
         String selection = "remote_id = ?";
         String[] selectionArgs = { String.valueOf(remote_id) };
-        ProductDBEntitiy product = null;
+        ProductDBEntity product = null;
 
         Cursor cursor = db.query(table_name, columns, selection, selectionArgs, null, null, null);
 
         if (cursor.moveToFirst())
-            product = new ProductDBEntitiy(cursor);
+            product = new ProductDBEntity(cursor);
 
         db.close();
 
@@ -117,11 +115,11 @@ public class ProductDAO {
         db.close();
     }
 
-    public void removeProdukt(ProductDBEntitiy product) {
+    public void removeProduct(ProductDBEntity product) {
         removeProduct(product.getId());
     }
 
-    public long addProduct(ProductDBEntitiy product) {
+    public long addProduct(ProductDBEntity product) {
         ContentValues values = product.getContentValues();
         SQLiteDatabase db = db_mng.getWritableDatabase();
 
@@ -132,64 +130,64 @@ public class ProductDAO {
         return id;
     }
 
-    public void updateProduct(ProductDBEntitiy product) {
+    public void updateProduct(ProductDBEntity product) {
         update_element_by_id(product);
     }
 
     public void setAsRemoved(long id) {
-        ProductDBEntitiy product = get_element_by_id(id);
+        ProductDBEntity product = get_element_by_id(id);
 
         product.setRemoved(1);
         update_element_by_id(product);
     }
 
     public void setAsUpdated(long id) {
-        ProductDBEntitiy product = get_element_by_id(id);
+        ProductDBEntity product = get_element_by_id(id);
 
         product.setUpdated(1);
         update_element_by_id(product);
     }
 
     public void updateTotalAmount(int id, int total) {
-        ProductDBEntitiy product = get_element_by_id(id);
+        ProductDBEntity product = get_element_by_id(id);
 
         product.setTotal(total);
         update_element_by_id(product);
     }
 
     public void updateSubtotalAmount(int id, int subtotal) {
-        ProductDBEntitiy product = get_element_by_id(id);
+        ProductDBEntity product = get_element_by_id(id);
 
         product.setSubtotal(subtotal);
         update_element_by_id(product);
     }
 
     public void changeSubtotalBy(long id, int delta) {
-        ProductDBEntitiy product = get_element_by_id(id);
+        ProductDBEntity product = get_element_by_id(id);
 
         product.setSubtotal(product.getSubtotal() + delta);
         update_element_by_id(product);
     }
 
     public void changeTotalAmountBy(long id, int delta) {
-        ProductDBEntitiy product = get_element_by_id(id);
+        ProductDBEntity product = get_element_by_id(id);
 
         product.setTotal(product.getTotal() + delta);
         update_element_by_id(product);
     }
 
-    private List<ProductDBEntitiy> get_all_products_that(String selection, String[] selectionArgs) {
+    private List<ProductDBEntity> get_all_products_that(String selection, String[] selectionArgs) {
         SQLiteDatabase db = db_mng.getReadableDatabase();
         Cursor cursor = db.query(table_name, columns, selection, selectionArgs,null, null, null, null);
-        List<ProductDBEntitiy> list = new LinkedList<>();
+        List<ProductDBEntity> list = new LinkedList<>();
 
-        while(cursor.moveToNext()) list.add(new ProductDBEntitiy(cursor));
+        while(cursor.moveToNext()) list.add(new ProductDBEntity(cursor));
         db.close();
 
         return list;
     }
 
-    private ProductDBEntitiy get_element_by_id(long id) {
+    private ProductDBEntity get_element_by_id(long id) {
         SQLiteDatabase db = db_mng.getReadableDatabase();
         String selection = "id = ?";
         String[] selectionArgs = { String.valueOf(id) };
@@ -197,13 +195,13 @@ public class ProductDAO {
 
         cursor.moveToFirst();
 
-        ProductDBEntitiy p =  new ProductDBEntitiy(cursor);
+        ProductDBEntity p =  new ProductDBEntity(cursor);
         db.close();
 
         return p;
     }
 
-    private void update_element_by_id(ProductDBEntitiy product) {
+    private void update_element_by_id(ProductDBEntity product) {
         String selection = "id = ?";
         String[] selectionArgs = { String.valueOf(product.getId()) };
         SQLiteDatabase db = db_mng.getWritableDatabase();

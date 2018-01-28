@@ -10,7 +10,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.kupiec.jacek.fridge.database.ProductDAO;
-import com.kupiec.jacek.fridge.database.ProductDBEntitiy;
+import com.kupiec.jacek.fridge.database.ProductDBEntity;
 import com.kupiec.jacek.fridge.net.*;
 import com.kupiec.jacek.fridge.tasks.ReloadTask;
 import com.kupiec.jacek.fridge.tasks.SyncTask;
@@ -25,7 +25,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 
 public class ProductsViewActivity extends AppCompatActivity {
     /* Jeżeli mój refresh token jest unieważnony to przerywam bierzącą akcję użytkownika i każę
@@ -130,7 +129,7 @@ public class ProductsViewActivity extends AppCompatActivity {
                     else if (product_state == PRODUCT_REMOVED)
                         this.adapter.remove(item);
                     else if (product_state == PRODUCT_MODIFIED) {
-                        ProductDBEntitiy product = this.dao.getProductById(item.getId());
+                        ProductDBEntity product = this.dao.getProductById(item.getId());
 
                         item.setAmount(product.getTotal());
                     }

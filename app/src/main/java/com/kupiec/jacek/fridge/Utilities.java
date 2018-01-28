@@ -3,7 +3,7 @@ package com.kupiec.jacek.fridge;
 import android.support.annotation.Nullable;
 
 import com.kupiec.jacek.fridge.database.ProductDAO;
-import com.kupiec.jacek.fridge.database.ProductDBEntitiy;
+import com.kupiec.jacek.fridge.database.ProductDBEntity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,7 +67,7 @@ public class Utilities {
     public static List<ListViewItem> load_from_db(ProductDAO dao) {
         List<ListViewItem> list = new LinkedList<>();
 
-        for (ProductDBEntitiy product: dao.getAllNotRemoved())
+        for (ProductDBEntity product: dao.getAllNotRemoved())
             list.add(product.toListViewItem());
 
         return list;

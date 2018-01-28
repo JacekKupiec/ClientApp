@@ -13,14 +13,16 @@ public class ProductNet {
     private int amount;
     private String guid;
     private String brand;
+    private long group_id;
 
-    public ProductNet(String name, String store_name, double price, int amount, String GUID, String brand) {
+    public ProductNet(String name, String store_name, double price, int amount, String GUID, String brand, long group_id) {
         this.name = name;
         this.store_name = store_name;
         this.price = price;
         this.amount = amount;
         this.guid = GUID;
         this.brand = brand;
+        this.group_id = group_id;
     }
 
     public ListViewItem toListViewItem(long id) {
@@ -69,4 +71,12 @@ public class ProductNet {
     }
 
     public String getBrand() { return this.brand; }
+
+    public long getGroupId() {
+        return group_id;
+    }
+
+    public void setGroupId(long group_id) {
+        this.group_id = group_id;
+    }
 }
