@@ -68,5 +68,10 @@ public class ListViewItem implements Serializable {
         this.price = price;
     }
 
-    public String getBrand() { return this.brand; }
+    public String getBrand() {
+        if (this.brand == null)
+            return "";
+        else
+            return this.brand;
+    }
 }
