@@ -9,9 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.kupiec.jacek.fridge.database.GroupDAO;
 import com.kupiec.jacek.fridge.database.ProductDAO;
 import com.kupiec.jacek.fridge.database.ProductDBEntity;
 import com.kupiec.jacek.fridge.net.*;
+import com.kupiec.jacek.fridge.tasks.DownloadGroupsTask;
 import com.kupiec.jacek.fridge.tasks.ReloadTask;
 import com.kupiec.jacek.fridge.tasks.SyncTask;
 
@@ -24,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Date;
 
 public class ProductsViewActivity extends AppCompatActivity {
@@ -38,24 +41,29 @@ public class ProductsViewActivity extends AppCompatActivity {
     public static final int GROUPS_ACTIVITY = 6;
 
     private String token = null;
-    private ArrayAdapter<ListViewItem> adapter;
+    private ArrayAdapter<ListViewItem> productAdapter;
+    private ArrayAdapter<SpinnerItem> groupAdapter;
     private RestClient client = new RestClient();
-    private ProductDAO dao;
+    private ProductDAO productDAO;
+    private GroupDAO groupDAO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_products_view);
 
-        this.dao = new ProductDAO(getApplicationContext());
-        this.adapter = new ArrayAdapter<>(this, R.layout.list_item);
+        this.productDAO = new ProductDAO(getApplicationContext());
+        this.groupDAO = new GroupDAO(getApplicationContext());
+        this.productAdapter = new ArrayAdapter<>(this, R.layout.list_item);
+        this.groupAdapter = new ArrayAdapter<SpinnerItem>(this, R.layout.list_item);
 
         ListView listView = findViewById(R.id.listView);
         listView.setOnItemClickListener(get_list_view_listener());
-        listView.setAdapter(this.adapter);
+        listView.setAdapter(this.productAdapter);
 
         launch_sync_task();
     }
+
 
     public void onClickAddButton(View view) {
         Resources r = getResources();
@@ -72,15 +80,18 @@ public class ProductsViewActivity extends AppCompatActivity {
         }
     }
 
+
     public void onClickLogInIndexButton(View view) {
         Intent intent = new Intent(this, LogInActivity.class);
 
         startActivityForResult(intent, LOG_IN_ACTIVITY);
     }
 
+
     public void onClickSyncButton(View view) {
         launch_sync_task();
     }
+
 
     public void onClickGroupsButton(View view) {
         Resources r = getResources();
@@ -96,6 +107,7 @@ public class ProductsViewActivity extends AppCompatActivity {
             Toast.makeText(this, "Na początku zaloguj się lub utwórz konto", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -113,7 +125,7 @@ public class ProductsViewActivity extends AppCompatActivity {
                     if (should_reload)
                         launch_reload_task();
                     else
-                        this.adapter.add((ListViewItem) data.getSerializableExtra(r.getString(R.string.product)));
+                        this.productAdapter.add((ListViewItem) data.getSerializableExtra(r.getString(R.string.product)));
                 }
 
                 break;
@@ -139,9 +151,9 @@ public class ProductsViewActivity extends AppCompatActivity {
                     if (should_reload)
                         launch_reload_task();
                     else if (product_state == PRODUCT_REMOVED)
-                        this.adapter.remove(item);
+                        this.productAdapter.remove(item);
                     else if (product_state == PRODUCT_MODIFIED) {
-                        ProductDBEntity product = this.dao.getProductById(item.getId());
+                        ProductDBEntity product = this.productDAO.getProductById(item.getId());
 
                         item.setAmount(product.getTotal());
                     }
@@ -157,11 +169,13 @@ public class ProductsViewActivity extends AppCompatActivity {
 
                     if (should_reload)
                         launch_reload_task();
-                    else { /*TODO: przeładować spinner, który będzie w przyszłości */ }
+                    else
+                        launch_download_groups_task();
                 }
                 break;
         }
     }
+
 
     private AdapterView.OnItemClickListener get_list_view_listener() {
         return new AdapterView.OnItemClickListener() {
@@ -180,6 +194,7 @@ public class ProductsViewActivity extends AppCompatActivity {
         };
     }
 
+
     private void launch_sync_task() {
         Resources r = getResources();
         SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
@@ -194,9 +209,12 @@ public class ProductsViewActivity extends AppCompatActivity {
 
                 this.token = Utilities.update_access_token(this.token, new_token);
 
-                SyncTask task = new SyncTask(this.adapter, ref_token, this.token, dao);
+                SyncTask task = new SyncTask(this.productAdapter, ref_token, this.token, productDAO);
+                DownloadGroupsTask groupTask = new DownloadGroupsTask(this.groupAdapter,
+                        ref_token, this.token, groupDAO);
 
                 task.execute();
+                groupTask.execute();
             } catch (JSONException ex) {
                 Log.e("JSONException",
                         "Nie udało się sprarsować odpowiedzi z serwera :(");
@@ -214,6 +232,7 @@ public class ProductsViewActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
     }
 
+
     private void launch_reload_task() {
         Resources r = getResources();
         SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
@@ -228,12 +247,55 @@ public class ProductsViewActivity extends AppCompatActivity {
 
                 this.token = Utilities.update_access_token(this.token, new_token);
 
-                ReloadTask task = new ReloadTask(this.adapter,
+                ReloadTask task = new ReloadTask(this.productAdapter,
                         ref_token,
                         this.token,
-                        dao);
+                        productDAO);
+                DownloadGroupsTask groupTask = new DownloadGroupsTask(this.groupAdapter,
+                        ref_token,
+                        this.token,
+                        groupDAO);
 
                 task.execute();
+                groupTask.execute();
+            } catch (JSONException ex) {
+                Log.e("JSONException",
+                        "Nie udało się sprarsować odpowiedzi z serwera :(");
+            } catch (IOException ex) {
+                Log.d("IOException",
+                        "Brak połączenia z Internetem");
+                Toast.makeText(this,
+                        "Brak połączenia z internetem",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+        else
+            Toast.makeText(this,
+                    "Zaloguj się lub utwórz konto",
+                    Toast.LENGTH_SHORT).show();
+    }
+
+
+    private void launch_download_groups_task() {
+        Resources r = getResources();
+        SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
+        String ref_token = sp.getString(r.getString(R.string.refresh_token), "");
+        Date ref_token_exp_date = Utilities.convert_to_date(sp.getString(r.getString(R.string.refresh_token_expiration_date), null));
+
+        if (Utilities.is_ref_token_valid(ref_token_exp_date)) {
+            try {
+                RequestResult result = client.refresh(ref_token);
+                JSONObject jo = result.getResponseBodyJSONObject();
+                String new_token = jo.getString(r.getString(R.string.token));
+
+                this.token = Utilities.update_access_token(this.token, new_token);
+
+                DownloadGroupsTask groupTask = new DownloadGroupsTask(this.groupAdapter,
+                        ref_token,
+                        this.token,
+                        groupDAO);
+
+                groupTask.execute();
             } catch (JSONException ex) {
                 Log.e("JSONException",
                         "Nie udało się sprarsować odpowiedzi z serwera :(");

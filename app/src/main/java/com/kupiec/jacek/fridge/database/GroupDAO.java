@@ -109,4 +109,8 @@ public class GroupDAO {
         db.update(table_name, group.getContentValues(), selection, selectionArgs);
         db.close();
     }
+
+    public void truncateGroupsTable() {
+        db_mng.getWritableDatabase().execSQL("DELETE FROM groups");
+    }
 }

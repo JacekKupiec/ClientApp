@@ -27,13 +27,13 @@ import java.util.List;
 
 
 public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
-    private ArrayAdapter<ListViewItem> adapter;
+    private ArrayAdapter<ListViewItem> productAdapter;
     private String refresh_token;
     private String access_token;
     private ProductDAO productDAO;
 
-    public SyncTask(ArrayAdapter<ListViewItem> adapter, String refresh_token, String token, ProductDAO productDAO) {
-        this.adapter = adapter;
+    public SyncTask(ArrayAdapter<ListViewItem> productAdapter, String refresh_token, String token, ProductDAO productDAO) {
+        this.productAdapter = productAdapter;
         this.refresh_token = refresh_token;
         this.access_token = token;
         this.productDAO = productDAO;
@@ -155,9 +155,9 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
         if (result == null) {
             Log.d("Synchronization FAILED", "Nie udało się poprawnie wykonać synchronizacji");
         } else {
-            this.adapter.clear();
-            this.adapter.addAll(result);
-            this.adapter.notifyDataSetChanged();
+            this.productAdapter.clear();
+            this.productAdapter.addAll(result);
+            this.productAdapter.notifyDataSetChanged();
             Log.d("Synchronization SUCCEED", "Synchronizację przeprowadzono poprawnie :)");
         }
     }

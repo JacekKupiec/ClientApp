@@ -4,7 +4,7 @@ package com.kupiec.jacek.fridge;
  * Created by jacek on 28.01.18.
  */
 
-class SpinnerItem {
+public class SpinnerItem {
     private long remote_id;
     private String name;
 
