@@ -30,13 +30,13 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
     private ArrayAdapter<ListViewItem> adapter;
     private String refresh_token;
     private String access_token;
-    private ProductDAO dao;
+    private ProductDAO productDAO;
 
-    public SyncTask(ArrayAdapter<ListViewItem> adapter, String refresh_token, String token, ProductDAO dao) {
+    public SyncTask(ArrayAdapter<ListViewItem> adapter, String refresh_token, String token, ProductDAO productDAO) {
         this.adapter = adapter;
         this.refresh_token = refresh_token;
         this.access_token = token;
-        this.dao = dao;
+        this.productDAO = productDAO;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
         String ref_tok = this.refresh_token, tok = this.access_token;
 
 
-        for (ProductDBEntity product: this.dao.getAllNewProducts()) {
+        for (ProductDBEntity product: this.productDAO.getAllNewProducts()) {
             try {
                 RequestResult result = client.add_product(ref_tok, tok, product.toProductNet());
                 JSONObject jo = result.getResponseBodyJSONObject();
@@ -54,7 +54,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
                 product.setNew(0);
                 product.setRemoteId(jo.getInt("id"));
-                this.dao.updateProduct(product);
+                this.productDAO.updateProduct(product);
             } catch (InvalidRefreshTokenException ex) {
                 Log.e("InvalidRefershToken",
                    "Nie można wykonać operacji ponieważ refresh token, który został podany nie działa");
@@ -64,24 +64,24 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                 return null; //Nie ma połączenia z internetem
             } catch (JSONException ex) {
                 Log.e("JSONException", "Nieprawidłowy format odpowiedzi z serwera");
-                return Utilities.load_from_db(this.dao);
+                return Utilities.load_from_db(this.productDAO);
             }
         }
 
-        for (ProductDBEntity product: this.dao.getAllProductsToRemove()) {
+        for (ProductDBEntity product: this.productDAO.getAllProductsToRemove()) {
             try {
                 RequestResult result = client.delete_product(ref_tok, tok, product.getRemoteId());
                 tok = Utilities.update_access_token(tok, result.getRefreshedAccessToken());
 
                 if (result.getResponseCode() == HttpURLConnection.HTTP_OK)
-                    this.dao.removeProduct(product.getId());
+                    this.productDAO.removeProduct(product.getId());
             } catch (InvalidRefreshTokenException ex) {
                 Log.e("InvalidRefershToken",
                         "Nie można wykonać operacji ponieważ refresh token, który został podany nie działa");
                 return null;
             } catch (IOException ex) {
                 Log.d("IOException", "Brak połączenia z Internetem");
-                return Utilities.load_from_db(this.dao); //Nie ma połączenia z internetem
+                return Utilities.load_from_db(this.productDAO); //Nie ma połączenia z internetem
             }
         }
 
@@ -94,7 +94,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
             for (int i = 0; i < jt.length(); i++) {
                 JSONObject item = jt.getJSONObject(i);
-                ProductDBEntity product = this.dao.getProductByRemoteId(item.getLong("id"));
+                ProductDBEntity product = this.productDAO.getProductByRemoteId(item.getLong("id"));
 
                 if (product == null) {
                     ProductDBEntity new_product = new ProductDBEntity(
@@ -109,7 +109,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         item.getInt("group_id")
                     );
 
-                    long id = this.dao.addProduct(new_product);
+                    long id = this.productDAO.addProduct(new_product);
                     to_not_delete.add(id);
                 }
                 else {
@@ -120,20 +120,20 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
                         product.setTotal(jj.getInt("amount"));
                         product.setUpdated(0);
-                        this.dao.updateProduct(product);
+                        this.productDAO.updateProduct(product);
                         to_not_delete.add((long)product.getId());
                     }
                 }
             }
 
-            dao.deleteAllThatNotIn(to_not_delete.toArray(new Long[to_not_delete.size()]));
+            productDAO.deleteAllThatNotIn(to_not_delete.toArray(new Long[to_not_delete.size()]));
         } catch (InvalidRefreshTokenException ex) {
             Log.e("InvalidRefershToken",
                     "Nie można wykonać operacji ponieważ refresh token, który został podany nie działa");
             return null;
         } catch (IOException ex) {
             Log.d("IOException", "Brak połączenia z Internetem");
-            return Utilities.load_from_db(this.dao); //Nie ma połączenia z internetem
+            return Utilities.load_from_db(this.productDAO); //Nie ma połączenia z internetem
         } catch (JSONException ex) {
             Log.e("JSONException", "Nieprawidłowy format odpowiedzi z serwera");
             return null;
@@ -141,7 +141,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
 
         List<ListViewItem> list = new LinkedList<>();
 
-        for (ProductDBEntity product: this.dao.getAllProducts()) {
+        for (ProductDBEntity product: this.productDAO.getAllProducts()) {
             list.add(product.toListViewItem());
         }
 

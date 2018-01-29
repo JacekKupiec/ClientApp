@@ -191,6 +191,22 @@ public class RestClient {
         }
     }
 
+    public RequestResult delete_group(String refresh_token, String token, long id)
+            throws InvalidRefreshTokenException, IOException {
+        String url = String.format("%s/groups/%d", SERVER_IP, id);
+        RequestResult result = doDELETE(url, token);
+        String new_token = refresh_access_token_if_necessary(result, refresh_token);
+
+        if (new_token.isEmpty())
+            return result;
+        else {
+            result = doDELETE(url, new_token);
+            result.setRefreshedAccessToken(new_token);
+
+            return result;
+        }
+    }
+
     public RequestResult remove_product_from_group(String refresh_token, String token, long group_id, long product_id)
             throws InvalidRefreshTokenException, IOException {
         String url = String.format("%s/groups/remove_product/%d/%d", SERVER_IP, group_id, product_id);
@@ -220,6 +236,46 @@ public class RestClient {
             result.setRefreshedAccessToken(new_token);
 
             return result;
+        }
+    }
+
+    public RequestResult remove_group(String refresh_token, String token, long group_id)
+            throws InvalidRefreshTokenException, IOException {
+        String url = String.format("%s/groups/%d", SERVER_IP, group_id);
+        RequestResult result = doDELETE(url, token);
+        String new_token = refresh_access_token_if_necessary(result, refresh_token);
+
+        if (new_token.isEmpty())
+            return result;
+        else {
+            result = doDELETE(url, new_token);
+            result.setRefreshedAccessToken(new_token);
+
+            return result;
+        }
+    }
+
+    public RequestResult add_group(String refresh_token, String token, String name)
+            throws InvalidRefreshTokenException, IOException {
+        String url = String.format("%s/groups",SERVER_IP);
+        String json_content = String.format("{ \"group\": { \"name\": \"%s\"} }", name);
+
+        try {
+            JSONObject jo = new JSONObject(json_content);
+            RequestResult result = doPOST(url, token, jo.toString());
+            String new_token = refresh_access_token_if_necessary(result, refresh_token);
+
+            if (new_token.isEmpty())
+                return result;
+            else {
+                result = doPOST(url, new_token, jo.toString());
+                result.setRefreshedAccessToken(new_token);
+
+                return result;
+            }
+        } catch (JSONException ex) {
+            Log.d("JSONException", "Podano nieprawidłowy format obiektu JSON");
+            return null;
         }
     }
 

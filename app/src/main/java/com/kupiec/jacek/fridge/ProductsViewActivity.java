@@ -35,6 +35,7 @@ public class ProductsViewActivity extends AppCompatActivity {
     public static final int SHOW_PRODUCT_ACTIVITY = 3;
     public static final int PRODUCT_REMOVED = 4;
     public static final int PRODUCT_MODIFIED = 5;
+    public static final int GROUPS_ACTIVITY = 6;
 
     private String token = null;
     private ArrayAdapter<ListViewItem> adapter;
@@ -81,8 +82,19 @@ public class ProductsViewActivity extends AppCompatActivity {
         launch_sync_task();
     }
 
-    public synchronized void setToken(String token) {
-        this.token = token;
+    public void onClickGroupsButton(View view) {
+        Resources r = getResources();
+        Intent intent = new Intent(this, GroupsActivity.class);
+        SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
+        Date ref_token_exp_date = Utilities.convert_to_date(sp.getString(r.getString(R.string.refresh_token_expiration_date), ""));
+
+        if (Utilities.is_ref_token_valid(ref_token_exp_date)) {
+            intent.putExtra(r.getString(R.string.token), this.token);
+            startActivityForResult(intent, GROUPS_ACTIVITY);
+        }
+        else {
+            Toast.makeText(this, "Na początku zaloguj się lub utwórz konto", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -135,6 +147,18 @@ public class ProductsViewActivity extends AppCompatActivity {
                     }
                 }
 
+                break;
+            case GROUPS_ACTIVITY:
+                new_token = data.getStringExtra(r.getString(R.string.token));
+                this.token = Utilities.update_access_token(this.token, new_token);
+
+                if (resultCode == Activity.RESULT_OK) {
+                    boolean should_reload = data.getBooleanExtra(r.getString(R.string.should_reload), false);
+
+                    if (should_reload)
+                        launch_reload_task();
+                    else { /*TODO: przeładować spinner, który będzie w przyszłości */ }
+                }
                 break;
         }
     }

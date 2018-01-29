@@ -34,7 +34,6 @@ public class ProductViewActivity extends AppCompatActivity {
     private boolean edited = false;
     private RestClient client = new RestClient();
     private ProductDAO productDAO;
-    private GroupDAO groupDAO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,11 +43,10 @@ public class ProductViewActivity extends AppCompatActivity {
         Resources r = getResources();
         Intent intent = getIntent();
         this.access_token = intent.getStringExtra(r.getString(R.string.token));
-        this.result_intent.putExtra(r.getString(R.string.position),
-            intent.getIntExtra(r.getString(R.string.position),0));
+        this.result_intent.putExtra(r.getString(R.string.position), intent.getIntExtra(r.getString(R.string.position),0));
         this.result_intent.putExtra(r.getString(R.string.should_reload), false);
         this.productDAO = new ProductDAO(getApplicationContext());
-        this.groupDAO = new GroupDAO(getApplicationContext());
+        GroupDAO groupDAO = new GroupDAO(getApplicationContext());
 
         ListViewItem item = (ListViewItem)intent.getSerializableExtra(r.getString(R.string.product));
 

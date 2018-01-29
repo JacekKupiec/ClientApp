@@ -54,11 +54,18 @@ public class GroupDAO {
         db.close();
     }
 
+    public void removeGroupByRemoteId(long id) {
+        SQLiteDatabase db = db_mng.getWritableDatabase();
+
+        db.delete(table_name, "remote_id = ?", new String[] { String.valueOf(id) } );
+        db.close();
+    }
+
     public void removeGroup(ProductDBEntity product) {
         removeGroup(product.getId());
     }
 
-    public long addGroup(ProductDBEntity product) {
+    public long addGroup(GroupDBEntity product) {
         ContentValues values = product.getContentValues();
         SQLiteDatabase db = db_mng.getWritableDatabase();
 
