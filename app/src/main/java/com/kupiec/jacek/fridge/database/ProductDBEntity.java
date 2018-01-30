@@ -24,7 +24,6 @@ public class ProductDBEntity {
     private String guid;
     private String brand;
     private long group_id;
-    private long groupId;
 
     public ProductDBEntity(String name, String store_name, double price, int total, int subtotal,
                            int _new, int removed, int updated, long remote_id, String guid,

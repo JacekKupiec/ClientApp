@@ -36,8 +36,6 @@ public class CreateProductActivity extends AppCompatActivity {
     private Intent result_intent = new Intent();
     private String access_token;
     private ProductDAO productDAO;
-    private GroupDAO groupDAO;
-    private ArrayAdapter<SpinnerItem> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,17 +51,14 @@ public class CreateProductActivity extends AppCompatActivity {
         this.access_token = intent.getStringExtra(r.getString(R.string.token));
         this.result_intent.putExtra(r.getString(R.string.should_reload), false);
         this.productDAO = new ProductDAO(this.getApplicationContext());
-        this.adapter = new ArrayAdapter<SpinnerItem>(this, R.layout.list_item);
+        GroupDAO groupDAO = new GroupDAO(this.getApplicationContext());
+        ArrayAdapter<SpinnerItem> adapter = new ArrayAdapter<>(this, R.layout.list_item);
 
-        List<GroupDBEntity> groups = groupDAO.getAllGroups();
-
-        for (GroupDBEntity g: groups)
-            this.adapter.add(new SpinnerItem(g.getRemoteId(), g.getName()));
-
-        groupSpinner.setAdapter(this.adapter);
+        Utilities.load_groups_from_db(groupDAO);
+        groupSpinner.setAdapter(adapter);
     }
 
-    //TODO: można wpisywać dużo produktów, nie trzeba wychodzić z aktywności po jednym dodaniu
+
     public void onClickCreateProductButton(View view) {
         Resources r = getResources();
         SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
@@ -157,11 +152,13 @@ public class CreateProductActivity extends AppCompatActivity {
         }
     }
 
+
     @Override
     public void onBackPressed() {
         setResult(Activity.RESULT_CANCELED, this.result_intent);
         super.onBackPressed();
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -179,12 +176,14 @@ public class CreateProductActivity extends AppCompatActivity {
         }
     }
 
+
     private double round_price(String price) {
         if (price != null && !price.isEmpty())
             return Math.floor(Double.parseDouble(price)*100.0) / 100;
         else
             return 0;
     }
+
 
     private int get_amount(String amount) {
         if (amount != null && !amount.isEmpty())

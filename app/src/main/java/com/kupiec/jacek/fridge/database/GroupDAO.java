@@ -24,7 +24,7 @@ public class GroupDAO {
     }
 
     public List<GroupDBEntity> getAllGroups() {
-        return get_all_products_that(null, null);
+        return get_all_groups_that(null, null);
     }
 
     public GroupDBEntity getGroup(long id) {
@@ -61,12 +61,12 @@ public class GroupDAO {
         db.close();
     }
 
-    public void removeGroup(ProductDBEntity product) {
-        removeGroup(product.getId());
+    public void removeGroup(GroupDBEntity group) {
+        removeGroup(group.getId());
     }
 
-    public long addGroup(GroupDBEntity product) {
-        ContentValues values = product.getContentValues();
+    public long addGroup(GroupDBEntity group) {
+        ContentValues values = group.getContentValues();
         SQLiteDatabase db = db_mng.getWritableDatabase();
 
         long id = db.insert(table_name, null, values);
@@ -76,7 +76,7 @@ public class GroupDAO {
         return id;
     }
 
-    private List<GroupDBEntity> get_all_products_that(String selection, String[] selectionArgs) {
+    private List<GroupDBEntity> get_all_groups_that(String selection, String[] selectionArgs) {
         SQLiteDatabase db = db_mng.getReadableDatabase();
         Cursor cursor = db.query(table_name, columns, selection, selectionArgs,null, null, null, null);
         List<GroupDBEntity> list = new LinkedList<>();

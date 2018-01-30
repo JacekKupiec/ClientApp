@@ -53,6 +53,7 @@ public class DownloadGroupsTask extends AsyncTask<Void, Void, List<SpinnerItem>>
                     long id = ja.getJSONObject(i).getInt("id");
                     String name = ja.getJSONObject(i).getString("name");
 
+                    groupDAO.addGroup(new GroupDBEntity(name, id));
                     list.add(new SpinnerItem(id, name));
                 }
             } else {
@@ -73,18 +74,23 @@ public class DownloadGroupsTask extends AsyncTask<Void, Void, List<SpinnerItem>>
         return list;
     }
 
+    /* Jeżeli jestem w głównej aktywności to muszę jakoś zrobić tak, żeby na początku był wybór
+    wszystkich produktów. To miało działać tak, że jest 1 element z ID -1 i on miał oznaczać,
+    żeby dać wszystkie produkty.*/
     protected void onPostExecute(List<SpinnerItem> result) {
         if (result == null) {
             Log.d("Synchronization FAILED", "Nie udało się poprawnie wykonać synchronizacji");
         } else {
             this.groupAdapter.clear();
+            this.groupAdapter.add(new SpinnerItem(0, "All"));
+            this.groupAdapter.add(new SpinnerItem(-1, "Others"));
             this.groupAdapter.addAll(result);
             this.groupAdapter.notifyDataSetChanged();
             Log.d("Synchronization SUCCEED", "Synchronizację przeprowadzono poprawnie :)");
         }
     }
 
-    public static List<SpinnerItem> load_from_db(GroupDAO dao) {
+    private List<SpinnerItem> load_from_db(GroupDAO dao) {
         List<SpinnerItem> list = new LinkedList<>();
 
         for (GroupDBEntity group: dao.getAllGroups())

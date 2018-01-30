@@ -30,14 +30,16 @@ public class DBManager extends SQLiteOpenHelper {
                 "brand text,"+
                 "group_id integer default -1);";
         db.execSQL(stmt);
+
+        stmt = "CREATE TABLE IF NOT EXISTS groups (" +
+                "id integer primary key autoincrement," +
+                "name text," +
+                "remote_id integer default 0);";
+        db.execSQL(stmt);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int odlVersion, int newVersion) {
-        String stmt = "CREATE TABLE IF NOT EXISTS groups (" +
-                "id integer primary key autoincrement" +
-                "name text," +
-                "remote_id integer default -1);";
-        db.execSQL(stmt);
+
     }
 }

@@ -2,6 +2,8 @@ package com.kupiec.jacek.fridge;
 
 import android.support.annotation.Nullable;
 
+import com.kupiec.jacek.fridge.database.GroupDAO;
+import com.kupiec.jacek.fridge.database.GroupDBEntity;
 import com.kupiec.jacek.fridge.database.ProductDAO;
 import com.kupiec.jacek.fridge.database.ProductDBEntity;
 
@@ -9,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.acl.Group;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -71,5 +74,15 @@ public class Utilities {
             list.add(product.toListViewItem());
 
         return list;
+    }
+
+    public static List<SpinnerItem> load_groups_from_db(GroupDAO groupDAO) {
+        List<GroupDBEntity> groups = groupDAO.getAllGroups();
+        List<SpinnerItem> adapter_items = new LinkedList<>();
+
+        for (GroupDBEntity g: groups)
+            adapter_items.add(new SpinnerItem(g.getRemoteId(), g.getName()));
+
+        return adapter_items;
     }
 }

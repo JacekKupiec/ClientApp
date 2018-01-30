@@ -1,6 +1,7 @@
 package com.kupiec.jacek.fridge.tasks;
 
 import android.os.AsyncTask;
+import android.support.annotation.IntegerRes;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -38,6 +39,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
         this.access_token = token;
         this.productDAO = productDAO;
     }
+
 
     @Override
     protected List<ListViewItem> doInBackground(Void... args) {
@@ -106,7 +108,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         item.getLong("id"),
                         item.getString("guid"),
                         item.getString("brand"),
-                        item.getInt("group_id")
+                        get_group_id(item)
                     );
 
                     long id = this.productDAO.addProduct(new_product);
@@ -159,6 +161,14 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
             this.productAdapter.addAll(result);
             this.productAdapter.notifyDataSetChanged();
             Log.d("Synchronization SUCCEED", "Synchronizację przeprowadzono poprawnie :)");
+        }
+    }
+
+    private long get_group_id(JSONObject j) {
+        try {
+            return Long.parseLong(j.getString("group_id"));
+        } catch (JSONException | NumberFormatException ex) {
+            return -1;
         }
     }
 }

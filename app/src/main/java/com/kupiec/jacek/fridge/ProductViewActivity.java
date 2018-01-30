@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -70,6 +71,11 @@ public class ProductViewActivity extends AppCompatActivity {
             groupNameView.setText(group.getName());
         else
             groupNameView.setText("");
+
+        Spinner addGroupSpinner = findViewById(R.id.addGroupSpinner);
+        ArrayAdapter<SpinnerItem> groupsAdapter = new ArrayAdapter<>(this, R.layout.list_item);
+        groupsAdapter.addAll(Utilities.load_groups_from_db(groupDAO));
+        addGroupSpinner.setAdapter(groupsAdapter);
     }
 
     public void onRemoveProductButtonClick(View view) {
@@ -263,11 +269,7 @@ public class ProductViewActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, LogInActivity.class);
                 startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
             } catch (IOException ex) {
-                this.edited = true;
-                groupNameTextView.setText("");
-                product.setGroupId(-1);
-                product.setUpdated(1);
-                productDAO.updateProduct(product);
+                Toast.makeText(this, "Usuwanie z grupy tylko ONLINE", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -316,11 +318,7 @@ public class ProductViewActivity extends AppCompatActivity {
             Intent intent = new Intent(this, LogInActivity.class);
             startActivityForResult(intent, ProductsViewActivity.LOG_IN_ACTIVITY);
         } catch (IOException ex) {
-            this.edited = true;
-            groupNameTextView.setText(spinnerItem.getName());
-            product.setGroupId(spinnerItem.getRemoteId());
-            product.setUpdated(1);
-            productDAO.updateProduct(product);
+            Toast.makeText(this, "Dodawanie do grupy tylko online", Toast.LENGTH_SHORT).show();
         }
     }
 

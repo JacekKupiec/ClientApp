@@ -24,7 +24,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.List;
 
 public class GroupsActivity extends AppCompatActivity {
     private GroupDAO groupDAO;
@@ -32,7 +31,7 @@ public class GroupsActivity extends AppCompatActivity {
     private Intent result_intent = new Intent();
     private boolean edited = false;
     private RestClient client = new RestClient();
-    private ArrayAdapter<SpinnerItem> adapter;
+    private ArrayAdapter<SpinnerItem> groupsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,19 +40,15 @@ public class GroupsActivity extends AppCompatActivity {
 
         Resources r = getResources();
         Intent intent = getIntent();
-        this.adapter = new ArrayAdapter<SpinnerItem>(this, R.layout.list_item);
+        this.groupsAdapter = new ArrayAdapter<SpinnerItem>(this, R.layout.list_item);
         Spinner groupToRemoveSpinner = findViewById(R.id.groupToRemoveSpinner);
         this.access_token = intent.getStringExtra(r.getString(R.string.token));
         this.result_intent.putExtra(r.getString(R.string.position), intent.getIntExtra(r.getString(R.string.position),0));
         this.result_intent.putExtra(r.getString(R.string.should_reload), false);
         this.groupDAO = new GroupDAO(getApplicationContext());
 
-        List<GroupDBEntity> groups = this.groupDAO.getAllGroups();
-
-        for (GroupDBEntity g: groups)
-            adapter.add(new SpinnerItem(g.getRemoteId(), g.getName()));
-
-        groupToRemoveSpinner.setAdapter(adapter);
+        groupsAdapter.addAll(Utilities.load_groups_from_db(this.groupDAO));
+        groupToRemoveSpinner.setAdapter(groupsAdapter);
     }
 
 
@@ -77,8 +72,8 @@ public class GroupsActivity extends AppCompatActivity {
             switch (result.getResponseCode()) {
                 case HttpURLConnection.HTTP_OK:
                     this.edited = true;
-                    this.adapter.remove(item);
-                    this.adapter.notifyDataSetChanged();
+                    this.groupsAdapter.remove(item);
+                    this.groupsAdapter.notifyDataSetChanged();
                     groupDAO.removeGroupByRemoteId(item.getRemoteId());
                     Toast.makeText(this, "Grupę usunięto poprawnie", Toast.LENGTH_SHORT).show();
                     break;
@@ -121,8 +116,8 @@ public class GroupsActivity extends AppCompatActivity {
                     SpinnerItem item = new SpinnerItem(jo.getInt("id"), name);
 
                     this.edited = true;
-                    this.adapter.add(item);
-                    this.adapter.notifyDataSetChanged();
+                    this.groupsAdapter.add(item);
+                    this.groupsAdapter.notifyDataSetChanged();
                     groupDAO.addGroup(new GroupDBEntity(name, item.getRemoteId()));
                     Toast.makeText(this, "Dodano grupę", Toast.LENGTH_SHORT).show();
                     break;

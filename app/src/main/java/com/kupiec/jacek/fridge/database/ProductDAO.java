@@ -18,8 +18,7 @@ public class ProductDAO {
     private static DBManager db_mng = null;
     private String table_name = "products";
     private String[] columns = { "id", "name", "store_name", "price", "total_amount",
-            "subtotal_amount", "remote_id", "new", "removed", "updated", "guid", "brand", "group_id",
-            "group_name" };
+            "subtotal_amount", "remote_id", "new", "removed", "updated", "guid", "brand", "group_id" };
 
     public ProductDAO(Context ctx) {
         if (db_mng == null)
@@ -174,6 +173,13 @@ public class ProductDAO {
 
         product.setTotal(product.getTotal() + delta);
         update_element_by_id(product);
+    }
+
+    public List<ProductDBEntity> getAllInGroup(long remoteId) {
+        String selection = "group_id = ? AND removed = ?";
+        String[] selectionArgs = { String.valueOf(remoteId), "0" };
+
+        return get_all_products_that(selection, selectionArgs);
     }
 
     private List<ProductDBEntity> get_all_products_that(String selection, String[] selectionArgs) {

@@ -20,6 +20,7 @@ import com.kupiec.jacek.fridge.tasks.SyncTask;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -28,6 +29,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ProductsViewActivity extends AppCompatActivity {
     /* Jeżeli mój refresh token jest unieważnony to przerywam bierzącą akcję użytkownika i każę
@@ -60,6 +63,10 @@ public class ProductsViewActivity extends AppCompatActivity {
         ListView listView = findViewById(R.id.listView);
         listView.setOnItemClickListener(get_list_view_listener());
         listView.setAdapter(this.productAdapter);
+
+        Spinner spinner = findViewById(R.id.chooseGroupSpinner);
+        spinner.setAdapter(groupAdapter);
+        spinner.setOnItemClickListener(get_spinner_listener());
 
         launch_sync_task();
     }
@@ -190,6 +197,34 @@ public class ProductsViewActivity extends AppCompatActivity {
                 intent.putExtra(r.getString(R.string.token), ProductsViewActivity.this.token);
                 intent.putExtra(r.getString(R.string.position), position);
                 startActivityForResult(intent, SHOW_PRODUCT_ACTIVITY);
+            }
+        };
+    }
+
+
+    private AdapterView.OnItemClickListener get_spinner_listener() {
+        return new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                Spinner chooseGroupSpinner = findViewById(R.id.chooseGroupSpinner);
+                SpinnerItem item = (SpinnerItem) chooseGroupSpinner.getItemAtPosition(position);
+
+                if (item.getRemoteId() == 0) {
+                    List<ListViewItem> list = Utilities.load_from_db(ProductsViewActivity.this.productDAO);
+
+                    ProductsViewActivity.this.productAdapter.clear();
+                    ProductsViewActivity.this.productAdapter.addAll(list);
+                    ProductsViewActivity.this.productAdapter.notifyDataSetChanged();
+                } else {
+                    List<ProductDBEntity> result = ProductsViewActivity.this.productDAO.getAllInGroup(item.getRemoteId());
+                    List<ListViewItem> list = new LinkedList<>();
+
+                    for (ProductDBEntity prod : result) list.add(prod.toListViewItem());
+
+                    ProductsViewActivity.this.productAdapter.clear();
+                    ProductsViewActivity.this.productAdapter.addAll(list);
+                    ProductsViewActivity.this.productAdapter.notifyDataSetChanged();
+                }
             }
         };
     }
