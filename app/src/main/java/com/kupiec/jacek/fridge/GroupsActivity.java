@@ -112,7 +112,7 @@ public class GroupsActivity extends AppCompatActivity {
             update_access_token(result);
 
             switch (result.getResponseCode()) {
-                case HttpURLConnection.HTTP_OK:
+                case HttpURLConnection.HTTP_CREATED:
                     JSONObject jo = result.getResponseBodyJSONObject();
                     SpinnerItem item = new SpinnerItem(jo.getInt("id"), name);
 

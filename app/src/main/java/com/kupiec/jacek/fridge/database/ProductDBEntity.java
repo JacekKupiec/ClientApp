@@ -61,18 +61,18 @@ public class ProductDBEntity {
     public ContentValues getContentValues() {
         ContentValues values = new ContentValues();
 
-        values.put("name", this.name);
-        values.put("store_name", this.store_name);
-        values.put("price", this.price);
-        values.put("total_amount", this.total);
-        values.put("subtotal_amount", this.subtotal);
-        values.put("remote_id", this.remote_id);
+        values.put("name", this.getName());
+        values.put("store_name", this.getStoreName());
+        values.put("price", this.getPrice());
+        values.put("total_amount", this.getTotal());
+        values.put("subtotal_amount", this.getSubtotal());
+        values.put("remote_id", this.getRemoteId());
         values.put("new", this._new);
         values.put("removed", this.removed);
         values.put("updated", this.updated);
-        values.put("guid", this.guid);
-        values.put("brand", this.brand);
-        values.put("group_id", this.group_id);
+        values.put("guid", this.getGUID());
+        values.put("brand", this.getBrand());
+        values.put("group_id", this.getGroupId());
 
         return values;
     }

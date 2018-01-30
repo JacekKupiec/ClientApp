@@ -27,7 +27,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,7 +57,7 @@ public class ProductsViewActivity extends AppCompatActivity {
         this.productDAO = new ProductDAO(getApplicationContext());
         this.groupDAO = new GroupDAO(getApplicationContext());
         this.productAdapter = new ArrayAdapter<>(this, R.layout.list_item);
-        this.groupAdapter = new ArrayAdapter<SpinnerItem>(this, R.layout.list_item);
+        this.groupAdapter = new ArrayAdapter<>(this, R.layout.list_item);
 
         ListView listView = findViewById(R.id.listView);
         listView.setOnItemClickListener(get_list_view_listener());

@@ -23,8 +23,8 @@
 
     <Button
         android:id="@+id/addProductButton"
-        android:layout_width="89dp"
-        android:layout_height="wrap_content"
+        android:layout_width="87dp"
+        android:layout_height="53dp"
         android:layout_marginBottom="8dp"
         android:layout_marginStart="8dp"
         android:onClick="onClickAddButton"

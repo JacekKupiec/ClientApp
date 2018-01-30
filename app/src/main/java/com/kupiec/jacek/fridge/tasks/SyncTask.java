@@ -2,6 +2,7 @@ package com.kupiec.jacek.fridge.tasks;
 
 import android.os.AsyncTask;
 import android.support.annotation.IntegerRes;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -107,7 +108,7 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
                         0, 0, 0, 0, //Tu subtotal na 0 bo istnieja już inne delty
                         item.getLong("id"),
                         item.getString("guid"),
-                        item.getString("brand"),
+                        get_brand(item),
                         get_group_id(item)
                     );
 
@@ -171,6 +172,19 @@ public class SyncTask extends AsyncTask<Void, Void, List<ListViewItem>> {
             return -1;
         }
     }
+
+
+    @Nullable
+    private String get_brand(JSONObject j) {
+        try {
+            String s = j.getString("brand");
+
+            if (s.compareTo("null") == 0)
+                return null;
+            else
+                return s;
+        } catch (JSONException ex) {
+            return null;
+        }
+    }
 }
-
-

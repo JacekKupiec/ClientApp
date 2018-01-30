@@ -54,7 +54,8 @@ public class CreateProductActivity extends AppCompatActivity {
         this.result_intent.putExtra(r.getString(R.string.should_reload), false);
         this.productDAO = new ProductDAO(this.getApplicationContext());
 
-        Utilities.load_groups_from_db(groupDAO);
+        adapter.add(new SpinnerItem(-1, "None"));
+        adapter.addAll(Utilities.load_groups_from_db(groupDAO));
         groupSpinner.setAdapter(adapter);
     }
 
