@@ -66,7 +66,7 @@ public class ProductsViewActivity extends AppCompatActivity {
 
         Spinner spinner = findViewById(R.id.chooseGroupSpinner);
         spinner.setAdapter(groupAdapter);
-        spinner.setOnItemClickListener(get_spinner_listener());
+        spinner.setOnItemSelectedListener(get_spinner_listener());
 
         launch_sync_task();
     }
@@ -202,10 +202,11 @@ public class ProductsViewActivity extends AppCompatActivity {
     }
 
 
-    private AdapterView.OnItemClickListener get_spinner_listener() {
-        return new AdapterView.OnItemClickListener() {
+    private AdapterView.OnItemSelectedListener get_spinner_listener() {
+        return new AdapterView.OnItemSelectedListener() {
+
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 Spinner chooseGroupSpinner = findViewById(R.id.chooseGroupSpinner);
                 SpinnerItem item = (SpinnerItem) chooseGroupSpinner.getItemAtPosition(position);
 
@@ -225,6 +226,11 @@ public class ProductsViewActivity extends AppCompatActivity {
                     ProductsViewActivity.this.productAdapter.addAll(list);
                     ProductsViewActivity.this.productAdapter.notifyDataSetChanged();
                 }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
             }
         };
     }

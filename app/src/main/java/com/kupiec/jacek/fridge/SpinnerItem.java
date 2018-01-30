@@ -9,7 +9,8 @@ public class SpinnerItem {
     private String name;
 
     public SpinnerItem(long remote_id, String name) {
-
+        this.remote_id = remote_id;
+        this.name = name;
     }
 
     @Override

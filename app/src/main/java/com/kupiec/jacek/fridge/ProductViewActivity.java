@@ -60,6 +60,8 @@ public class ProductViewActivity extends AppCompatActivity {
 
         ProductDBEntity product = productDAO.getProductById(item.getId());
         GroupDBEntity group = groupDAO.getGroupByRemoteId(product.getGroupId());
+        Spinner addGroupSpinner = findViewById(R.id.addGroupSpinner);
+        ArrayAdapter<SpinnerItem> groupsAdapter = new ArrayAdapter<>(this, R.layout.list_item);
 
         nameTextView.setText(item.getName());
         storeNameTextView.setText(item.getStoreName());
@@ -72,8 +74,6 @@ public class ProductViewActivity extends AppCompatActivity {
         else
             groupNameView.setText("");
 
-        Spinner addGroupSpinner = findViewById(R.id.addGroupSpinner);
-        ArrayAdapter<SpinnerItem> groupsAdapter = new ArrayAdapter<>(this, R.layout.list_item);
         groupsAdapter.addAll(Utilities.load_groups_from_db(groupDAO));
         addGroupSpinner.setAdapter(groupsAdapter);
     }

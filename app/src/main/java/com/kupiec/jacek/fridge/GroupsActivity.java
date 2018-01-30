@@ -40,15 +40,16 @@ public class GroupsActivity extends AppCompatActivity {
 
         Resources r = getResources();
         Intent intent = getIntent();
-        this.groupsAdapter = new ArrayAdapter<SpinnerItem>(this, R.layout.list_item);
         Spinner groupToRemoveSpinner = findViewById(R.id.groupToRemoveSpinner);
+
+        this.groupsAdapter = new ArrayAdapter<SpinnerItem>(this, R.layout.list_item);
         this.access_token = intent.getStringExtra(r.getString(R.string.token));
         this.result_intent.putExtra(r.getString(R.string.position), intent.getIntExtra(r.getString(R.string.position),0));
         this.result_intent.putExtra(r.getString(R.string.should_reload), false);
         this.groupDAO = new GroupDAO(getApplicationContext());
 
-        groupsAdapter.addAll(Utilities.load_groups_from_db(this.groupDAO));
-        groupToRemoveSpinner.setAdapter(groupsAdapter);
+        this.groupsAdapter.addAll(Utilities.load_groups_from_db(this.groupDAO));
+        groupToRemoveSpinner.setAdapter(this.groupsAdapter);
     }
 
 
@@ -74,7 +75,7 @@ public class GroupsActivity extends AppCompatActivity {
                     this.edited = true;
                     this.groupsAdapter.remove(item);
                     this.groupsAdapter.notifyDataSetChanged();
-                    groupDAO.removeGroupByRemoteId(item.getRemoteId());
+                    this.groupDAO.removeGroupByRemoteId(item.getRemoteId());
                     Toast.makeText(this, "Grupę usunięto poprawnie", Toast.LENGTH_SHORT).show();
                     break;
                 case HttpURLConnection.HTTP_BAD_REQUEST:
@@ -118,7 +119,7 @@ public class GroupsActivity extends AppCompatActivity {
                     this.edited = true;
                     this.groupsAdapter.add(item);
                     this.groupsAdapter.notifyDataSetChanged();
-                    groupDAO.addGroup(new GroupDBEntity(name, item.getRemoteId()));
+                    this.groupDAO.addGroup(new GroupDBEntity(name, item.getRemoteId()));
                     Toast.makeText(this, "Dodano grupę", Toast.LENGTH_SHORT).show();
                     break;
                 case HttpURLConnection.HTTP_BAD_REQUEST:

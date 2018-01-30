@@ -47,12 +47,12 @@ public class CreateProductActivity extends AppCompatActivity {
         Spinner groupSpinner = findViewById(R.id.groupNameSpinner);
         SharedPreferences sp = getSharedPreferences(r.getString(R.string.prefrences_token), MODE_PRIVATE);
         String refresh_token = sp.getString(r.getString(R.string.refresh_token), null);
+        GroupDAO groupDAO = new GroupDAO(this.getApplicationContext());
+        ArrayAdapter<SpinnerItem> adapter = new ArrayAdapter<>(this, R.layout.list_item);
 
         this.access_token = intent.getStringExtra(r.getString(R.string.token));
         this.result_intent.putExtra(r.getString(R.string.should_reload), false);
         this.productDAO = new ProductDAO(this.getApplicationContext());
-        GroupDAO groupDAO = new GroupDAO(this.getApplicationContext());
-        ArrayAdapter<SpinnerItem> adapter = new ArrayAdapter<>(this, R.layout.list_item);
 
         Utilities.load_groups_from_db(groupDAO);
         groupSpinner.setAdapter(adapter);
